@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom overrides to achieve the Supari Studios top-tier digital studio design system */
+  --color-gray-950: #050505; /* Extreme Velvet Black background */
+  --color-gray-900: #0d0d0f; /* Pure Dark Ink Slate card background */
+  --color-gray-800: #14151a; /* Smooth dark border line */
+  --color-gray-700: #20222a; /* Accent borders */
+  --color-gray-600: #3c3f4e;
+  --color-gray-500: #62677b; /* High contrast body text */
+  --color-gray-400: #939ab1;
+  --color-gray-300: #cbd3e6;
+  --color-gray-200: #e2e8f5;
+  --color-gray-100: #f1f5f9;
+
+  --color-accent: #FFD400; /* Luxury Gold-Yellow */
+  --color-accent-hover: #E0B800;
+  --color-accent-glow: rgba(255, 212, 0, 0.35);
+  --color-primary-violet: #5E17EB; /* Vibrant Royal Violet */
+  --color-primary-indigo: #4F46E5;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #050505; /* Organic extreme velvet black canvas */
+    color: #cbd3e6; /* Easy-to-read medium contrast body text */
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  /* Custom ultra-premium scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #14151a;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #FFD400; /* Gold-Yellow accent */
+  }
+}
+
+/* Custom premium ambient lighting effects */
+.orange-glow {
+  box-shadow: 0 0 50px -10px rgba(255, 212, 0, 0.12);
+}
+
+.orange-glow-sm {
+  box-shadow: 0 0 25px -5px rgba(255, 212, 0, 0.05);
+}
+
+.orange-text-glow {
+  text-shadow: 0 0 15px rgba(255, 212, 0, 0.35);
+}
+
+/* Glassmorphism panel elements */
+.glass-panel {
+  background: rgba(11, 11, 12, 0.75);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(255, 212, 0, 0.25);
+  box-shadow: 0 0 35px -10px rgba(255, 212, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Beautiful tech background dot pattern */
+.terminal-grid {
+  background-image: 
+    radial-gradient(rgba(255, 212, 0, 0.02) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+/* Dynamic floating radial blob animations */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(40px, -40px) scale(1.15);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.15);
+  }
+  50% {
+    transform: translate(-40px, 40px) scale(0.9);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s infinite ease-in-out;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 24s infinite ease-in-out;
+}
+
+/* Scanline visual styling */
+.scanline::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
