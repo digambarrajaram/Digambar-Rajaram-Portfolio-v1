@@ -51,6 +51,37 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen]);
 
+  // Focus trap — keep Tab / Shift+Tab cycling within the nav drawer while open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = document.getElementById("mobile-nav-panel");
+    if (!panel) return;
+
+    const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(panel.querySelectorAll(FOCUSABLE)) as HTMLElement[];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", trapFocus);
+    return () => document.removeEventListener("keydown", trapFocus);
+  }, [isOpen]);
+
   const navItems = [
     { id: "hero", label: "Home" },
     { id: "about", label: "Profile" },
@@ -94,116 +125,116 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   };
 
   return (
-    <nav
-      ref={navRef}
-      id="navbar"
-      className={`fixed left-0 w-full z-50 transition-all duration-300 ${
-        isChaosMode ? "top-[96px] sm:top-[56px]" : "top-0"
-      } ${
-        scrolled
-          ? "bg-gray-950/85 backdrop-blur-md border-b border-gray-900/60 py-3"
-          : "bg-transparent py-5"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Logo / Name — a real button so it's keyboard-focusable and
-              announced correctly by screen readers. */}
-          <button
-            type="button"
-            onClick={() => handleNavClick("hero")}
-            className="flex items-center space-x-3 cursor-pointer bg-transparent border-0 p-0 text-left"
-            aria-label={`${personalInfo.name} — go to home`}
-          >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display font-bold text-gray-950 transition-all duration-500 ${
-              isChaosMode
-                ? "bg-red-500 shadow-[0_0_20px_#EF4444] animate-pulse"
-                : "bg-accent shadow-[0_0_15px_rgba(255,212,0,0.5)]"
-            }`}>
-              {isChaosMode ? "⚠️" : "DR"}
-            </div>
-            <div>
-              <span className="font-display font-bold text-lg tracking-tight text-white block">
-                {personalInfo.name}
-              </span>
-              <span className={`font-mono text-[10px] tracking-widest uppercase block -mt-1 font-semibold transition-colors duration-500 ${
-                isChaosMode ? "text-red-400 animate-pulse" : "text-accent"
+    <>
+      <nav
+        ref={navRef}
+        id="navbar"
+        className={`fixed left-0 w-full z-50 transition-all duration-300 ${
+          isChaosMode ? "top-[96px] sm:top-[56px]" : "top-0"
+        } ${
+          scrolled
+            ? "bg-gray-950/85 backdrop-blur-md border-b border-gray-900/60 py-3"
+            : "bg-transparent py-5"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            {/* Logo / Name — a real button so it's keyboard-focusable and
+                announced correctly by screen readers. */}
+            <button
+              type="button"
+              onClick={() => handleNavClick("hero")}
+              className="flex items-center space-x-3 cursor-pointer bg-transparent border-0 p-0 text-left"
+              aria-label={`${personalInfo.name} — go to home`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display font-bold text-gray-950 transition-all duration-500 ${
+                isChaosMode
+                  ? "bg-red-500 shadow-[0_0_20px_#EF4444] animate-pulse"
+                  : "bg-accent shadow-[0_0_15px_rgba(255,212,0,0.5)]"
               }`}>
-                {isChaosMode ? "[🚨 ALERT: INCIDENT DEV]" : "SRE & AI Platform Portfolio"}
-              </span>
-            </div>
-          </button>
+                {isChaosMode ? "⚠️" : "DR"}
+              </div>
+              <div>
+                <span className="font-display font-bold text-lg tracking-tight text-white block">
+                  {personalInfo.name}
+                </span>
+                <span className={`font-mono text-[10px] tracking-widest uppercase block -mt-1 font-semibold transition-colors duration-500 ${
+                  isChaosMode ? "text-red-400 animate-pulse" : "text-accent"
+                }`}>
+                  {isChaosMode ? "[🚨 ALERT: INCIDENT DEV]" : "SRE & AI Platform Portfolio"}
+                </span>
+              </div>
+            </button>
 
-          {/* Desktop Nav Items */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            {navItems.map((item) => (
+            {/* Desktop Nav Items */}
+            <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  aria-current={activeSection === item.id ? "page" : undefined}
+                  className={`px-3 py-1.5 rounded-md font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
+                    activeSection === item.id
+                      ? "text-accent bg-accent/5 border border-accent/20 shadow-[0_0_12px_rgba(255,212,0,0.05)]"
+                      : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Social icons & Quick CTA */}
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-3 text-gray-400 border-r border-gray-800 pr-4">
+                <a
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent transition-colors"
+                  title="GitHub"
+                  aria-label="GitHub (opens in new tab)"
+                >
+                  <Github size={18} />
+                </a>
+                <a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent transition-colors"
+                  title="LinkedIn"
+                  aria-label="LinkedIn (opens in new tab)"
+                >
+                  <Linkedin size={18} />
+                </a>
+              </div>
               <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                aria-current={activeSection === item.id ? "page" : undefined}
-                className={`px-3 py-1.5 rounded-md font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
-                  activeSection === item.id
-                    ? "text-accent bg-accent/5 border border-accent/20 shadow-[0_0_12px_rgba(255,212,0,0.05)]"
-                    : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
-                }`}
+                onClick={() => handleNavClick("contact")}
+                className="px-4 py-2 bg-accent hover:bg-accent-hover text-gray-950 font-sans font-bold text-xs tracking-wider uppercase rounded-md shadow-[0_0_20px_rgba(255,212,0,0.25)] hover:shadow-[0_0_30px_rgba(255,212,0,0.4)] transition-all cursor-pointer"
               >
-                {item.label}
+                Get In Touch
               </button>
-            ))}
-          </div>
-
-          {/* Social icons & Quick CTA */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-3 text-gray-400 border-r border-gray-800 pr-4">
-              <a
-                href={socialLinks.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-accent transition-colors"
-                title="GitHub"
-                aria-label="GitHub (opens in new tab)"
-              >
-                <Github size={18} />
-              </a>
-              <a
-                href={socialLinks.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-accent transition-colors"
-                title="LinkedIn"
-                aria-label="LinkedIn (opens in new tab)"
-              >
-                <Linkedin size={18} />
-              </a>
             </div>
-            <button
-              onClick={() => handleNavClick("contact")}
-              className="px-4 py-2 bg-accent hover:bg-accent-hover text-gray-950 font-sans font-bold text-xs tracking-wider uppercase rounded-md shadow-[0_0_20px_rgba(255,212,0,0.25)] hover:shadow-[0_0_30px_rgba(255,212,0,0.4)] transition-all cursor-pointer"
-            >
-              Get In Touch
-            </button>
-          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-400 hover:text-white p-2"
-              aria-label={isOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isOpen}
-              aria-controls="mobile-nav-panel"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* Mobile Menu Button */}
+            <div className="flex md:hidden items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-gray-400 hover:text-white p-2"
+                aria-label={isOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isOpen}
+                aria-controls="mobile-nav-panel"
+              >
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu — two-layer: a full-height transparent backdrop for
-           tap-to-close (blocks interaction with page content behind it),
-           and a separate content-sized solid panel that starts just below
-           the navbar header (accounting for any banner offset above it)
-           and only takes as much height as its children need. */}
+      {/* Mobile Menu — rendered outside <nav> so the nav's backdrop-blur-md
+           (present when scrolled) doesn't create a containing block that
+           breaks position:fixed on iOS Safari. */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -214,8 +245,8 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-40 md:hidden isolate"
-              style={{ backgroundColor: '#030303', transform: 'translateZ(0)' }}
+              className="fixed inset-0 z-40 md:hidden"
+              style={{ backgroundColor: '#030303' }}
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
@@ -231,12 +262,12 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed left-0 right-0 z-50 md:hidden bg-gray-950 overflow-y-auto flex flex-col px-4 pb-6 space-y-3 isolate"
+              className="fixed left-0 right-0 z-50 md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3"
+              data-scroll-lock-scrollable
               style={{
                 backgroundColor: '#060606',
-                transform: 'translateZ(0)',
                 top: panelTop,
-                maxHeight: panelTop ? `calc(100vh - ${panelTop}px)` : undefined,
+                maxHeight: panelTop ? `calc(100dvh - ${panelTop}px)` : undefined,
               }}
             >
               {/* Close button inside the drawer — always visible on mobile so users
@@ -317,6 +348,6 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
           </>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 }

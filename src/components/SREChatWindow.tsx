@@ -129,6 +129,37 @@ export default function SREChatWindow() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen]);
 
+  // Focus trap — keep Tab / Shift+Tab cycling within the chat panel while open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = document.getElementById("sre-chat-panel");
+    if (!panel) return;
+
+    const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(panel.querySelectorAll(FOCUSABLE)) as HTMLElement[];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", trapFocus);
+    return () => document.removeEventListener("keydown", trapFocus);
+  }, [isOpen]);
+
   // Abort any in-flight request if the component unmounts.
   useEffect(() => {
     return () => abortControllerRef.current?.abort();
@@ -256,7 +287,7 @@ export default function SREChatWindow() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
               className="fixed inset-0 z-[60]"
-              style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }}
+              style={{ backgroundColor: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(12px)' }}
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
@@ -323,7 +354,8 @@ export default function SREChatWindow() {
             {/* Message Pane */}
             <div
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-950/95 terminal-grid themed-scrollbar"
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-950 terminal-grid themed-scrollbar"
+              data-scroll-lock-scrollable
               role="log"
               aria-live="polite"
             >
