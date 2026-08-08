@@ -214,8 +214,8 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-40 md:hidden"
-              style={{ backgroundColor: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(6px)' }}
+              className="fixed inset-0 z-40 md:hidden isolate"
+              style={{ backgroundColor: '#030303', transform: 'translateZ(0)' }}
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
@@ -231,9 +231,10 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed left-0 right-0 z-50 md:hidden bg-gray-950 overflow-y-auto flex flex-col px-4 pb-6 space-y-3"
+              className="fixed left-0 right-0 z-50 md:hidden bg-gray-950 overflow-y-auto flex flex-col px-4 pb-6 space-y-3 isolate"
               style={{
-                backgroundColor: 'rgba(6,6,6,0.99)',
+                backgroundColor: '#060606',
+                transform: 'translateZ(0)',
                 top: panelTop,
                 maxHeight: panelTop ? `calc(100vh - ${panelTop}px)` : undefined,
               }}
