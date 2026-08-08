@@ -318,7 +318,7 @@ export default function ConsoleDemo() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left panel: Playbook Selectors */}
           <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
-            <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1 -mr-1">
+            <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1 -mr-1 themed-scrollbar hide-scrollbar">
               <span className="font-mono text-[10px] text-gray-500 uppercase tracking-widest block font-bold">
                 Available Playbooks
               </span>
@@ -416,7 +416,7 @@ export default function ConsoleDemo() {
             </div>
 
             {/* Terminal Log Screen */}
-            <div ref={terminalContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-5 font-mono text-[11px] sm:text-xs space-y-2 select-text leading-relaxed">
+            <div ref={terminalContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-5 font-mono text-[11px] sm:text-xs space-y-2 select-text leading-relaxed themed-scrollbar">
               {visibleLogs.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-center text-gray-600 select-none py-12">
                   <Terminal size={36} className="text-gray-800 mb-2 animate-pulse" />

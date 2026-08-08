@@ -89,6 +89,36 @@ export default function App() {
     }, 500);
   };
 
+  // When the incident banner appears it is fixed at the top and may change height
+  // on small viewports; measure it and expose via a CSS variable so sections like
+  // the hero can adjust padding to avoid overlap/truncation.
+  useEffect(() => {
+    const setBannerOffset = () => {
+      const el = document.getElementById("incident-banner");
+      const height = el ? el.offsetHeight : 0;
+      document.documentElement.style.setProperty("--banner-offset", `${height}px`);
+    };
+
+    // Update immediately and on resize
+    setBannerOffset();
+    window.addEventListener("resize", setBannerOffset);
+
+    // If banner exists, observe it for size changes (e.g., column -> row)
+    const el = document.getElementById("incident-banner");
+    let ro: ResizeObserver | null = null;
+    if (el && (window as any).ResizeObserver) {
+      ro = new ResizeObserver(setBannerOffset);
+      ro.observe(el);
+    }
+
+    return () => {
+      window.removeEventListener("resize", setBannerOffset);
+      if (ro && el) ro.unobserve(el);
+      // reset when effect cleans up
+      document.documentElement.style.setProperty("--banner-offset", "0px");
+    };
+  }, [isChaosMode]);
+
   return (
     <div className={`relative min-h-screen bg-gray-950 font-sans text-gray-100 selection:bg-accent selection:text-gray-950 transition-colors duration-700 ${isChaosMode ? "shadow-[inset_0_0_100px_rgba(239,68,68,0.15)] border-red-500/10" : ""}`}>
       
@@ -96,6 +126,7 @@ export default function App() {
       <AnimatePresence>
         {isChaosMode && (
           <motion.div
+            id="incident-banner"
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -60, opacity: 0 }}
@@ -129,6 +160,8 @@ export default function App() {
 
       {/* Floating Header */}
       <Navbar activeSection={activeSection} isChaosMode={isChaosMode} setIsChaosMode={setIsChaosMode} />
+
+      
 
       {/* Main Page Layout */}
       <main className="w-full">
@@ -166,7 +199,7 @@ export default function App() {
               </div>
 
               {/* Console Logs Stream */}
-              <div className="h-72 overflow-y-auto space-y-2 p-3 bg-gray-950/80 border border-gray-900 rounded-xl leading-relaxed select-none">
+              <div className="h-72 overflow-y-auto space-y-2 p-3 bg-gray-950/80 border border-gray-900 rounded-xl leading-relaxed select-none themed-scrollbar">
                 {healingLogs.slice(0, Math.ceil((healingProgress / 100) * healingLogs.length)).map((log, idx) => {
                   const isFirst = idx === 0;
                   const isLast = idx === healingLogs.length - 1 && healingProgress === 100;
@@ -203,7 +236,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* High-fidelity DevOps SRE Footer */}
-      <footer className="bg-gray-950 border-t border-gray-900/80 py-12 px-4 sm:px-6 lg:px-8 relative z-10 overflow-hidden">
+      <footer className="bg-gray-950 border-t border-gray-900/80 pt-12 pb-24 px-4 sm:px-6 lg:px-8 relative z-10 overflow-hidden">
         {/* Neon Glow */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[100px] bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
 
@@ -228,10 +261,10 @@ export default function App() {
           <div className="flex flex-col items-center md:items-end text-center md:text-right space-y-2">
             <div className="flex items-center space-x-2.5 text-[10px] font-mono text-gray-400 bg-gray-950 border border-gray-900 px-3 py-1.5 rounded-lg">
               <CheckCircle2 size={12} className="text-accent" />
-              <span>TLS ENCRYPTED CONNECTION</span>
+              <span>Built with React · Tailwind CSS · Framer Motion</span>
             </div>
             <p className="text-[10px] font-mono text-gray-600">
-              Guardrails: Enforced | Design system: Verified
+              Served over HTTPS · Design system: in-house
             </p>
           </div>
         </div>

@@ -10,21 +10,27 @@ interface NavbarProps {
   setIsChaosMode: (val: boolean) => void;
 }
 
-export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: NavbarProps) {
+export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [navHeight, setNavHeight] = useState(0);
+  // Distance from the top of the viewport to the bottom of the fixed navbar.
+  // Used to position the mobile dropdown panel exactly below the header,
+  // including any additional offset from the chaos-mode banner (fixes a bug
+  // where the panel rendered too high / overlapped the banner in chaos mode).
+  const [panelTop, setPanelTop] = useState(0);
   const navRef = useRef<HTMLElement>(null);
 
   useScrollLock(isOpen);
 
-  // Measure actual navbar height so the mobile drawer can offset itself
-  // exactly below the fixed header on any device, instead of relying on a
-  // hard-coded pt-20 that breaks on taller viewports.
   useEffect(() => {
-    if (navRef.current) {
-      setNavHeight(navRef.current.offsetHeight);
-    }
+    const updatePanelTop = () => {
+      if (navRef.current) {
+        setPanelTop(navRef.current.getBoundingClientRect().bottom);
+      }
+    };
+    updatePanelTop();
+    window.addEventListener("resize", updatePanelTop);
+    return () => window.removeEventListener("resize", updatePanelTop);
   }, [isOpen, scrolled, isChaosMode]);
 
   useEffect(() => {
@@ -34,6 +40,16 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close the mobile menu on Escape for keyboard users.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen]);
 
   const navItems = [
     { id: "hero", label: "Home" },
@@ -45,16 +61,36 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
     { id: "contact", label: "Contact" },
   ];
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    const navHeight = navRef.current?.offsetHeight || 0;
+    const bannerOffset = parseInt(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--banner-offset") || "0",
+      10
+    );
+
+    const targetY = Math.max(
+      0,
+      element.getBoundingClientRect().top + window.scrollY - navHeight - bannerOffset
+    );
+
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+  };
+
   const handleNavClick = (id: string) => {
+    const shouldDelayScroll = isOpen;
     setIsOpen(false);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-    });
+
+    if (shouldDelayScroll) {
+      // Wait for the exit animation (150ms) to finish before scrolling so we
+      // don't scroll the page while the panel is still visually closing.
+      window.setTimeout(() => scrollToSection(id), 160);
+    } else {
+      scrollToSection(id);
+    }
   };
 
   return (
@@ -71,8 +107,14 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo / Name */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNavClick("hero")}>
+          {/* Logo / Name — a real button so it's keyboard-focusable and
+              announced correctly by screen readers. */}
+          <button
+            type="button"
+            onClick={() => handleNavClick("hero")}
+            className="flex items-center space-x-3 cursor-pointer bg-transparent border-0 p-0 text-left"
+            aria-label={`${personalInfo.name} — go to home`}
+          >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display font-bold text-gray-950 transition-all duration-500 ${
               isChaosMode
                 ? "bg-red-500 shadow-[0_0_20px_#EF4444] animate-pulse"
@@ -90,7 +132,7 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
                 {isChaosMode ? "[🚨 ALERT: INCIDENT DEV]" : "SRE & AI Platform Portfolio"}
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Desktop Nav Items */}
           <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
@@ -98,6 +140,7 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
+                aria-current={activeSection === item.id ? "page" : undefined}
                 className={`px-3 py-1.5 rounded-md font-sans text-sm font-medium transition-all duration-200 cursor-pointer ${
                   activeSection === item.id
                     ? "text-accent bg-accent/5 border border-accent/20 shadow-[0_0_12px_rgba(255,212,0,0.05)]"
@@ -115,18 +158,20 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
               <a
                 href={socialLinks.github}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="hover:text-accent transition-colors"
                 title="GitHub"
+                aria-label="GitHub (opens in new tab)"
               >
                 <Github size={18} />
               </a>
               <a
                 href={socialLinks.linkedin}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="hover:text-accent transition-colors"
                 title="LinkedIn"
+                aria-label="LinkedIn (opens in new tab)"
               >
                 <Linkedin size={18} />
               </a>
@@ -144,7 +189,9 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-400 hover:text-white p-2"
-              aria-label="Toggle menu"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+              aria-controls="mobile-nav-panel"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -155,8 +202,8 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
       {/* Mobile Menu — two-layer: a full-height transparent backdrop for
            tap-to-close (blocks interaction with page content behind it),
            and a separate content-sized solid panel that starts just below
-           the navbar header and only takes as much height as its children
-           need — no dead space below the Get In Touch button. */}
+           the navbar header (accounting for any banner offset above it)
+           and only takes as much height as its children need. */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -167,23 +214,28 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-40 md:hidden bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-40 md:hidden"
+              style={{ backgroundColor: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(6px)' }}
               onClick={() => setIsOpen(false)}
+              aria-hidden="true"
             />
 
             {/* Content panel — starts just below the navbar, height ≈ content */}
             <motion.div
               key="nav-panel"
+              id="mobile-nav-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile navigation"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
               className="fixed left-0 right-0 z-50 md:hidden bg-gray-950 overflow-y-auto flex flex-col px-4 pb-6 space-y-3"
               style={{
-                top: navRef.current?.offsetHeight || 0,
-                maxHeight: navRef.current?.offsetHeight
-                  ? `calc(100vh - ${navRef.current.offsetHeight}px)`
-                  : undefined,
+                backgroundColor: 'rgba(6,6,6,0.99)',
+                top: panelTop,
+                maxHeight: panelTop ? `calc(100vh - ${panelTop}px)` : undefined,
               }}
             >
               {/* Close button inside the drawer — always visible on mobile so users
@@ -203,6 +255,7 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
+                    aria-current={activeSection === item.id ? "page" : undefined}
                     className={`w-full text-left px-4 py-2.5 rounded-md font-sans text-base font-medium flex items-center justify-between ${
                       activeSection === item.id
                         ? "text-accent bg-accent/10 border-l-2 border-accent pl-3"
@@ -222,8 +275,9 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
                   <a
                     href={socialLinks.github}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="flex items-center space-x-2 hover:text-accent"
+                    aria-label="GitHub (opens in new tab)"
                   >
                     <Github size={18} />
                     <span className="text-sm">GitHub</span>
@@ -231,8 +285,9 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
                   <a
                     href={socialLinks.linkedin}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="flex items-center space-x-2 hover:text-accent"
+                    aria-label="LinkedIn (opens in new tab)"
                   >
                     <Linkedin size={18} />
                     <span className="text-sm">LinkedIn</span>
@@ -242,7 +297,7 @@ export default function Navbar({ activeSection, isChaosMode, setIsChaosMode }: N
                 <div className="flex flex-col space-y-2 text-xs text-gray-500 font-mono px-4">
                   <div className="flex items-center space-x-2">
                     <Mail size={12} className="text-accent" />
-                    <span>{personalInfo.email}</span>
+                    <span className="break-all">{personalInfo.email}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Phone size={12} className="text-accent" />

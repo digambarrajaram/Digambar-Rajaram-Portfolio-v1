@@ -133,17 +133,11 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
     }
   ];
 
-  const floatingBadges: Array<{ text: string; top: string; left: string; icon?: React.ComponentType<{ size?: number; className?: string }> }> = [
-    { text: "⚡ AI-Powered Self-Healing", top: "12%", left: "6%" },
-    { text: "Kubernetes Native", top: "22%", left: "84%", icon: Layers },
-    { text: "🛡️ OIDC Secure (IRSA)", top: "72%", left: "10%" },
-    { text: "⚙️ GitOps via ArgoCD", top: "82%", left: "78%" },
-  ];
-
   return (
     <section
       id="hero"
       className="relative min-h-screen pt-32 pb-20 flex flex-col justify-center items-center overflow-hidden terminal-grid bg-gray-950 px-4 sm:px-6 lg:px-8"
+      style={{ paddingTop: `calc(var(--banner-offset, 0px) + 8rem)` }}
     >
       {/* Background ambient gradient light blobs */}
       <div className={`absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none transition-all duration-1000 ${
@@ -151,36 +145,6 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
       } animate-float-slow`} />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none animate-float-reverse" />
 
-      {/* Floating high-end tech badges */}
-      <div className="hidden lg:block absolute inset-0 pointer-events-none select-none">
-        {floatingBadges.map((badge, idx) => {
-          const BadgeIcon = badge.icon;
-          return (
-          <motion.div
-            key={idx}
-            style={{ top: badge.top, left: badge.left }}
-            animate={{
-              y: [0, -10, 0],
-              opacity: [0.4, 0.75, 0.4],
-            }}
-            transition={{
-              duration: 6 + idx,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute px-3 py-1.5 rounded-full border border-white/5 bg-gray-900/40 backdrop-blur-md text-xs font-mono text-gray-300 shadow-[0_0_15px_rgba(255,212,0,0.03)]"
-          >
-            <span className="flex items-center space-x-1.5">
-              {BadgeIcon ? (
-                <BadgeIcon size={12} className="text-accent" />
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              )}
-              <span>{badge.text}</span>
-            </span>
-          </motion.div>
-        )})}
-      </div>
 
       <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative z-10">
         
@@ -231,16 +195,17 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
           </div>
 
           {/* Interactive Controller Switch in Text block */}
-          <div className="mt-8 p-4 rounded-xl bg-gray-900/30 border border-gray-900 backdrop-blur-sm max-w-md flex items-center justify-between gap-4">
-            <div>
+          <div className="mt-8 p-4 rounded-xl bg-gray-900/30 border border-gray-900 backdrop-blur-sm max-w-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1">
               <p className="text-xs font-mono text-gray-400 font-bold uppercase tracking-wider">Disaster Simulation Deck</p>
               <p className="text-[11px] text-gray-500 mt-1">Simulate a real-time cluster incident to demonstrate how my automated self-healing playbooks remediate memory leaks and pod crashes.</p>
             </div>
             <button
               onClick={() => setIsChaosMode(!isChaosMode)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out outline-none ${
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out outline-none mt-3 sm:mt-0 ${
                 isChaosMode ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]" : "bg-gray-700 hover:bg-gray-600"
               }`}
+              aria-label="Toggle Disaster Simulation"
             >
               <span
                 className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-gray-950 shadow ring-0 transition duration-300 ease-in-out flex items-center justify-center ${
@@ -359,13 +324,13 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
               {/* Tab 1: Cluster Nodes */}
               {activeTab === "cluster" && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-gray-400">
-                    <span>EKS-prod-ap-south-01 Cluster Nodes (18 Nodes)</span>
-                    <span className="text-gray-500">Filter: Active</span>
+                  <div className="cluster-header flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] font-mono text-gray-400">
+                    <span className="cluster-title">EKS-prod-ap-south-01 Cluster Nodes (18 Nodes)</span>
+                    <span className="cluster-filter text-gray-500">Filter: Active</span>
                   </div>
 
                   {/* Nodes Grid */}
-                  <div className="grid grid-cols-6 gap-2 bg-gray-950/60 p-4 rounded-xl border border-gray-900/60">
+                  <div className="cluster-nodes-grid grid grid-cols-3 sm:grid-cols-6 gap-2 bg-gray-950/60 p-4 rounded-xl border border-gray-900/60">
                     {Array.from({ length: 18 }).map((_, i) => {
                       // Simulating some crashing nodes in Chaos Mode
                       const isFailingNode = isChaosMode && (i === 4 || i === 9 || i === 13);
@@ -395,7 +360,7 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
                   </div>
 
                   {/* Node Stats row */}
-                  <div className="flex gap-3 justify-between font-mono text-[10px] text-gray-500 bg-gray-900/10 p-3 rounded-lg border border-gray-900/50">
+                  <div className="cluster-status-footer flex flex-col sm:flex-row gap-3 justify-between font-mono text-[10px] text-gray-500 bg-gray-900/10 p-3 rounded-lg border border-gray-900/50">
                     <div className="flex items-center space-x-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                       <span>{isChaosMode ? "15 Online" : "18 Online"}</span>

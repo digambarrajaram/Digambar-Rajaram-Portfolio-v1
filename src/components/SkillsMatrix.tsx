@@ -46,6 +46,9 @@ export default function SkillsMatrix() {
   const categoryLabels: Record<string, string> = {
     agenticAi: "Agentic AI Operations & LLM Engineering",
     cloudDevOps: "Cloud Infrastructure, DevOps & CI/CD",
+    awsComputeStorage: "AWS Compute & Storage",
+    awsNetworking: "AWS Networking & Edge",
+    awsSecurity: "AWS Identity, Key Management & Monitoring",
     kubernetesAndSecurity: "Advanced Kubernetes Operations & Platform Security",
     infrastructureVirtualization: "Enterprise Virtualization, Datacenter & DR Systems",
     monitoringAutomation: "SRE, Central Logging & Systems Automation",
@@ -149,24 +152,27 @@ export default function SkillsMatrix() {
                     <div className="absolute top-0 left-0 h-0.5 w-0 bg-accent group-hover:w-full transition-all duration-300" />
                     <div className="absolute -right-8 -top-8 w-16 h-16 bg-accent/5 rounded-full blur-xl pointer-events-none" />
 
-                    <h3 className="font-display font-bold text-sm sm:text-base text-white mb-5 tracking-tight flex items-center space-x-2 text-center md:text-left">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 shadow-[0_0_8px_rgba(255,212,0,0.8)] animate-pulse" />
+                    <h3 className="font-display font-bold text-sm sm:text-base text-white mb-5 tracking-tight flex items-start md:items-center space-x-2 text-center md:text-left">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 shadow-[0_0_8px_rgba(255,212,0,0.8)] animate-pulse mt-1 md:mt-0" />
                       <span>{title}</span>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {list.map((skill) => (
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          key={skill}
-                          className="px-3.5 py-2 rounded-lg bg-gray-950/80 border border-gray-900/50 flex items-center justify-between hover:border-accent/20 hover:bg-gray-900/40 transition-all cursor-default"
-                        >
-                          <span className="text-xs sm:text-sm text-gray-300 font-sans leading-tight">
-                            {skill}
-                          </span>
-                          <CheckCircle size={12} className="text-accent/60 shrink-0 ml-2" />
-                        </motion.div>
-                      ))}
+                      {list.map((skill, idx) => {
+                        const isLastSingle = list.length % 2 === 1 && idx === list.length - 1;
+                        return (
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            key={skill}
+                            className={`px-3.5 py-2 rounded-lg bg-gray-950/80 border border-gray-900/50 flex items-center justify-between hover:border-accent/20 hover:bg-gray-900/40 transition-all cursor-default ${isLastSingle ? 'sm:col-span-2' : ''}`}
+                          >
+                            <span className="text-xs sm:text-sm text-gray-300 font-sans leading-tight">
+                              {skill}
+                            </span>
+                            <CheckCircle size={12} className="text-accent/60 shrink-0 ml-2" />
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 );

@@ -4,22 +4,16 @@ export function useScrollLock(isLocked: boolean) {
   useEffect(() => {
     if (!isLocked) return;
 
-    const scrollY = window.scrollY;
     const body = document.body;
+    const originalOverflow = body.style.overflow;
+    const originalTouchAction = body.style.touchAction;
 
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
     body.style.overflow = "hidden";
+    body.style.touchAction = "none";
 
     return () => {
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.overflow = "";
-      window.scrollTo(0, scrollY);
+      body.style.overflow = originalOverflow;
+      body.style.touchAction = originalTouchAction;
     };
   }, [isLocked]);
 }

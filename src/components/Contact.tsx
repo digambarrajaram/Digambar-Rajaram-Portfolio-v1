@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Phone, MapPin, Send, Github, Linkedin, Copy, Check, Info } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Github, Linkedin, Copy, Check, Info, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { personalInfo, socialLinks } from "../data";
 
@@ -21,6 +21,7 @@ export default function Contact() {
   const [submitError, setSubmitError] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
 
   const rolesList = [
     "DevOps Engineer",
@@ -45,6 +46,20 @@ export default function Contact() {
     navigator.clipboard.writeText(personalInfo.phone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
+  };
+
+  const handleRevealPhone = () => {
+    setShowPhone(true);
+    try {
+      navigator.clipboard.writeText(personalInfo.phone);
+      setCopiedPhone(true);
+      setTimeout(() => setCopiedPhone(false), 2000);
+    } catch (_) {}
+  };
+
+  const maskPhone = (phone: string) => {
+    // mask all digits except last 4
+    return phone.replace(/\d(?=\d{4})/g, '•');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,6 +120,7 @@ export default function Contact() {
             Contact & Gateway Credentials
           </h2>
           <div className="h-1 w-12 bg-accent mx-auto md:mx-0 mt-4 rounded-full" />
+          <p className="text-sm text-gray-400 mt-3">Use this form to send a message or share credentials — recruiters and collaborators welcome.</p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
@@ -155,16 +171,27 @@ export default function Contact() {
                     </div>
                     <div>
                       <span className="text-[10px] text-gray-500 uppercase font-mono block">CELLULAR TELEPHONY</span>
-                      <span className="text-sm text-white font-medium block mt-0.5">{personalInfo.phone}</span>
+                      <span className="text-sm text-white font-medium block mt-0.5">{showPhone ? personalInfo.phone : maskPhone(personalInfo.phone)}</span>
+                      {!showPhone && <div className="text-[11px] text-gray-500 mt-1">Tap Reveal to show the number (helps reduce scraping)</div>}
                     </div>
                   </div>
-                  <button
-                    onClick={handleCopyPhone}
-                    className="p-1.5 hover:bg-gray-900 border border-transparent hover:border-gray-800 text-gray-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-                    title="Copy Phone"
-                  >
-                    {copiedPhone ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-                  </button>
+                  {!showPhone ? (
+                    <button
+                      onClick={handleRevealPhone}
+                      className="px-3 py-1 text-xs bg-gray-900 border border-gray-800 text-gray-400 hover:text-white rounded-lg transition-colors"
+                      title="Reveal Phone"
+                    >
+                      Reveal
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleCopyPhone}
+                      className="p-1.5 hover:bg-gray-900 border border-transparent hover:border-gray-800 text-gray-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                      title="Copy Phone"
+                    >
+                      {copiedPhone ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                    </button>
+                  )}
                 </div>
 
                 {/* Location item */}
@@ -243,6 +270,7 @@ export default function Contact() {
                   <label htmlFor="email" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
                     Gateway Return Email
                   </label>
+                  <div className="text-[11px] text-gray-500 mt-1">Where we can send a reply (your contact email)</div>
                   <input
                     id="email"
                     type="email"
@@ -261,19 +289,25 @@ export default function Contact() {
                 <label htmlFor="role" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
                   Project Domain / Target Role
                 </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none"
-                >
-                  {rolesList.map((role) => (
-                    <option key={role} value={role} className="bg-gray-950 text-gray-300">
-                      {role}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="w-full appearance-none bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none pr-10"
+                    aria-label="Project Domain or Target Role"
+                  >
+                    {rolesList.map((role) => (
+                      <option key={role} value={role} className="bg-gray-950 text-gray-300">
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                    <ChevronDown size={16} />
+                  </span>
+                </div>
               </div>
 
               {/* Message */}
@@ -332,6 +366,7 @@ export default function Contact() {
                   </>
                 )}
               </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">Send Message</p>
             </form>
           </motion.div>
         </div>

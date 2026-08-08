@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, ExternalLink, Cpu, Code, ArrowRight, ShieldAlert, Sparkles, X, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { projects } from "../data";
@@ -45,6 +45,26 @@ export default function ProjectGallery() {
     });
   }, [selectedCategory, cleanedSearchQuery]);
 
+  // Refs for the scrolling tab row
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const tabsRef = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Auto-scroll active tab into view on small screens
+  useEffect(() => {
+    const idx = categories.indexOf(selectedCategory);
+    const btn = tabsRef.current[idx];
+    if (btn && containerRef.current) {
+      try {
+        btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } catch (e) {
+        // fallback: adjust scrollLeft
+        const container = containerRef.current;
+        const offset = btn.offsetLeft - (container.clientWidth / 2) + (btn.clientWidth / 2);
+        container.scrollTo({ left: offset, behavior: "smooth" });
+      }
+    }
+  }, [selectedCategory, categories]);
+
   return (
     <section id="projects" className="py-16 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
       <div className="absolute top-1/2 left-10 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
@@ -73,21 +93,31 @@ export default function ProjectGallery() {
 
         {/* Filter & Search Toolbar */}
         <div className="mb-10 flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-950/45 p-4 rounded-xl border border-gray-900/50 backdrop-blur-sm">
-          {/* Categories pill list */}
-          <div className="flex flex-wrap gap-1.5 w-full md:w-auto justify-center md:justify-start">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-medium ${
-                  selectedCategory === cat
-                    ? "bg-accent text-gray-950 shadow-[0_0_12px_rgba(204,255,0,0.3)] font-bold"
-                    : "text-gray-400 hover:text-white hover:bg-white/5 bg-gray-900/40"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Categories pill list - horizontally scrollable on small screens with gradient affordance */}
+          <div className="relative w-full md:w-auto">
+            <div
+              ref={(el) => (containerRef.current = el)}
+              className="flex gap-1.5 w-full md:w-auto overflow-x-auto md:overflow-visible whitespace-nowrap md:flex-wrap md:justify-start px-1 hide-scrollbar"
+            >
+              {categories.map((cat, idx) => (
+                <button
+                  key={cat}
+                  ref={(el) => (tabsRef.current[idx] = el)}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`inline-flex items-center px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-medium min-w-max whitespace-nowrap ${
+                    selectedCategory === cat
+                      ? "bg-accent text-gray-950 shadow-[0_0_12px_rgba(204,255,0,0.3)] font-bold"
+                      : "text-gray-400 hover:text-white hover:bg-white/5 bg-gray-900/40"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Left/Right gradient fades to indicate horizontal overflow on small screens */}
+            <div className="pointer-events-none md:hidden absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-gray-950 to-transparent" />
+            <div className="pointer-events-none md:hidden absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-950 to-transparent" />
           </div>
 
           {/* Search bar */}
@@ -205,7 +235,7 @@ export default function ProjectGallery() {
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                className="relative bg-gray-950 border border-gray-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] z-10"
+                className="relative bg-gray-950 border border-gray-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] z-10 themed-scrollbar"
               >
                 {/* Header visual banner */}
                 <div className="bg-gradient-to-r from-accent/10 via-primary-violet/5 to-gray-950 p-6 sm:p-8 border-b border-gray-900 relative">

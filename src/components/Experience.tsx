@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Briefcase, MapPin, Calendar, Server, Award, ChevronDown, ChevronUp, Database, ArrowRight } from "lucide-react";
+import { Briefcase, MapPin, Calendar, Server, Award, ChevronDown, ChevronUp, Database, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { experience } from "../data";
 
@@ -65,9 +65,6 @@ export default function Experience() {
         <div className="relative border-l-0 md:border-l border-gray-900 ml-0 md:ml-8 md:grid md:grid-cols-12 gap-8 pb-4">
           {experience.map((exp, idx) => (
             <React.Fragment key={exp.company}>
-              {/* Timeline dot marker */}
-              <div className="hidden md:block absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-gray-950 border-2 border-accent shadow-[0_0_10px_rgba(204,255,0,0.6)] animate-pulse" />
-
               {/* Left column info (Title, date, company details) */}
               <motion.div 
                 initial={{ opacity: 0, x: -30 }}
@@ -188,7 +185,7 @@ export default function Experience() {
                               <div className="px-5 pb-5 pt-1 border-t border-gray-900/40 bg-gray-950/40 space-y-3">
                                 {group.bullets.map((bullet, bIdx) => (
                                   <div key={bIdx} className="flex items-start space-x-2.5">
-                                    <ArrowRight size={12} className="text-accent mt-1 shrink-0" />
+                                    <CheckCircle size={12} className="text-accent mt-1 shrink-0" />
                                     <p className="text-xs sm:text-sm text-gray-400 leading-relaxed font-sans">
                                       {bullet}
                                     </p>

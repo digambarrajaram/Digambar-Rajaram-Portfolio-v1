@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck, Crosshair, Award, Flame, Zap } from "lucide-react";
+import { ShieldCheck, Crosshair, Award, Flame, Zap, CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { about } from "../data";
 
@@ -108,7 +108,7 @@ export default function About() {
               <ul className="space-y-4">
                 {about.expertise.map((item, idx) => (
                   <li key={idx} className="flex items-start space-x-3 text-sm font-sans">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0 shadow-[0_0_8px_rgba(255,212,0,0.8)]" />
+                    <CheckCircle size={14} className="text-accent mt-1 shrink-0" />
                     <span className="text-gray-300 leading-relaxed">{item}</span>
                   </li>
                 ))}
@@ -134,7 +134,7 @@ export default function About() {
               <ul className="space-y-4">
                 {about.approach.map((item, idx) => (
                   <li key={idx} className="flex items-start space-x-3 text-sm font-sans">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 shrink-0 shadow-[0_0_8px_rgba(255,212,0,0.8)]" />
+                    <CheckCircle size={14} className="text-accent mt-1 shrink-0" />
                     <span className="text-gray-300 leading-relaxed uppercase-first">
                       {item}
                     </span>

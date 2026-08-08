@@ -81,7 +81,6 @@ export const skills = {
     "Workflow automation with N8N"
   ],
   cloudDevOps: [
-    "AWS (EC2, S3, IAM, VPC, Lambda, API Gateway, EKS, CloudWatch, ALB/NLB, Route 53, CloudFront, ECR, KMS)",
     "Terraform (modules, remote state, S3 + DynamoDB locking)",
     "Docker (multi-stage builds) & Containerization",
     "Kubernetes (EKS)",
@@ -90,6 +89,26 @@ export const skills = {
     "Jenkins CI/CD",
     "GitHub Actions (OIDC)",
     "Ansible Playbooks"
+  ],
+  // Split AWS services into smaller, evenly-sized cards
+  awsComputeStorage: [
+    "EC2",
+    "EKS",
+    "Lambda",
+    "S3",
+    "ECR",
+    "CloudFront"
+  ],
+  awsNetworking: [
+    "VPC",
+    "ALB/NLB",
+    "Route 53",
+    "API Gateway"
+  ],
+  awsSecurity: [
+    "IAM",
+    "KMS",
+    "CloudWatch"
   ],
   kubernetesAndSecurity: [
     "RBAC (Roles, ClusterRoles, RoleBindings)",
@@ -148,7 +167,7 @@ export const experience: ExperienceItem[] = [
       "Led operations for a 6-member infrastructure and site reliability team, acting as primary incident commander for critical escalation tickets, and coordinating structured ITIL Change Advisory Board checklist operations."
     ],
     achievements: [
-      "Promoted to Assistant Manager within 6 months based on technical mastery and operational leadership.",
+      "Established incident response playbooks, runbooks and on-call automation that improved MTTR and stabilized production operations.",
       "Designed and implemented the core GitOps EKS continuous delivery architecture adopted across all production environments.",
       "Cut VMware disaster recovery failover drill time by 60% through custom Ansible-driven DR automation playbooks."
     ]
