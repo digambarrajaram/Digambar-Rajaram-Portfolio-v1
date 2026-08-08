@@ -13,7 +13,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import Markdown from "react-markdown";
-import { useScrollLock } from "../hooks/useScrollLock";
+import { pinBody, unpinBody } from "../hooks/bodyPin";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -33,7 +33,12 @@ export default function SREChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
   const [isContactVisible, setIsContactVisible] = useState(false);
 
-  useScrollLock(isOpen);
+  // Guard against double-unlock on unmount.
+  useEffect(() => {
+    return () => {
+      if (isOpenRef.current) unpinBody();
+    };
+  }, []);
 
   useEffect(() => {
     const contactEl = document.getElementById("contact");
@@ -60,6 +65,7 @@ export default function SREChatWindow() {
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isFirstRender = useRef(true);
+  const isOpenRef = useRef(false);
 
   // Scrolls only the message pane's own scrollbar, never the page.
   const scrollToBottom = () => {
@@ -123,7 +129,7 @@ export default function SREChatWindow() {
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") closeChat();
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -230,6 +236,18 @@ export default function SREChatWindow() {
     }
   };
 
+  const openChat = () => {
+    pinBody(); // synchronous — reflow happens before paint
+    isOpenRef.current = true;
+    setIsOpen(true);
+  };
+
+  const closeChat = () => {
+    isOpenRef.current = false;
+    setIsOpen(false);
+    unpinBody();
+  };
+
   const handleReset = () => {
     if (window.confirm("Are you sure you want to re-initialize SRE Chat session?")) {
       abortControllerRef.current?.abort();
@@ -254,7 +272,7 @@ export default function SREChatWindow() {
           <motion.button
             ref={toggleBtnRef}
             id="chat-toggle-btn"
-            onClick={() => setIsOpen(true)}
+            onClick={openChat}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="relative p-4 rounded-full text-gray-950 font-bold shadow-[0_0_20px_rgba(255,212,0,0.3)] hover:shadow-[0_0_30px_rgba(255,212,0,0.5)] transition-all cursor-pointer flex items-center justify-center bg-accent text-gray-950"
@@ -288,7 +306,7 @@ export default function SREChatWindow() {
               transition={{ duration: 0.12 }}
               className="fixed inset-0 z-[60]"
               style={{ backgroundColor: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)' }}
-              onClick={() => setIsOpen(false)}
+              onClick={closeChat}
               aria-hidden="true"
             />
             {/* Panel */}
@@ -329,7 +347,7 @@ export default function SREChatWindow() {
                   <RotateCcw size={12} />
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeChat}
                   title="Minimize Terminal"
                   aria-label="Close chat"
                   className="p-1.5 rounded bg-gray-950 border border-gray-800 hover:border-red-500/40 text-gray-400 hover:text-red-400 transition-colors cursor-pointer"

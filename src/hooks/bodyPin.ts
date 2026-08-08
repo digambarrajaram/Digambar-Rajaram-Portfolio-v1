@@ -1,0 +1,64 @@
+// Synchronous body-pin/unpin so the layout shift happens BEFORE React
+// paints, not after (which would cause a 1–2s post-paint reflow on mobile).
+// Shares its lock counter with useScrollLock so the two mechanisms coexist.
+
+let lockCount = 0;
+let savedScrollY = 0;
+let originalBodyStyle: Record<string, string> = {};
+let originalHtmlOverflow = "";
+
+function handleTouchMove(e: TouchEvent) {
+  const target = e.target as HTMLElement | null;
+  if (target?.closest("[data-scroll-lock-scrollable]")) return;
+  e.preventDefault();
+}
+
+export function pinBody() {
+  if (lockCount === 0) {
+    const body = document.body;
+    savedScrollY = window.scrollY;
+
+    originalBodyStyle = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+      overscrollBehavior: body.style.overscrollBehavior,
+    };
+    originalHtmlOverflow = document.documentElement.style.overflow;
+
+    body.style.position = "fixed";
+    body.style.top = `-${savedScrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    document.documentElement.style.overflow = "hidden";
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+  }
+  lockCount++;
+}
+
+export function unpinBody() {
+  lockCount = Math.max(0, lockCount - 1);
+  if (lockCount > 0) return;
+
+  const body = document.body;
+
+  body.style.position = originalBodyStyle.position || "";
+  body.style.top = originalBodyStyle.top || "";
+  body.style.left = originalBodyStyle.left || "";
+  body.style.right = originalBodyStyle.right || "";
+  body.style.width = originalBodyStyle.width || "";
+  body.style.overflow = originalBodyStyle.overflow || "";
+  body.style.overscrollBehavior = originalBodyStyle.overscrollBehavior || "";
+  document.documentElement.style.overflow = originalHtmlOverflow || "";
+
+  document.removeEventListener("touchmove", handleTouchMove);
+
+  window.scrollTo(0, savedScrollY);
+}

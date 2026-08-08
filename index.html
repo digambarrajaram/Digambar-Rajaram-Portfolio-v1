@@ -9,5 +9,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Prevent iOS Safari from restoring a mid-page scroll position on
+      // reload — must run synchronously before any paint, so a React
+      // useEffect is too late.
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+    </script>
   </body>
 </html>
