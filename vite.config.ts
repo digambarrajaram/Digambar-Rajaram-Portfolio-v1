@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
+const __dirname = import.meta?.dirname ?? new URL('.', import.meta.url).pathname;
+
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
