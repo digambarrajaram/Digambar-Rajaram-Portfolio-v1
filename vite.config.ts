@@ -15,15 +15,10 @@ export default defineConfig(() => {
       chunkSizeWarningLimit: 800,
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: [
-              'react',
-              'react-dom',
-              '@vitejs/plugin-react',
-              '@tailwindcss/vite',
-              'lucide-react',
-              'motion',
-            ],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
           },
         },
       },
