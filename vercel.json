@@ -4,11 +4,9 @@
   "outputDirectory": "dist",
   "functions": {
     "api/index.ts": {
-      "runtime": "nodejs22.x",
       "maxDuration": 30
     },
     "api/[...slug].ts": {
-      "runtime": "nodejs22.x",
       "maxDuration": 30
     }
   },
