@@ -75,8 +75,8 @@ app.post("/chat", chatLimiter, async (req: Request, res: Response, next: NextFun
   }
 });
 
-// 404 for unmatched /api routes.
-app.use("/api", (_req: Request, res: Response) => {
+// 404 for unmatched routes inside the serverless function.
+app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Not found" });
 });
 
