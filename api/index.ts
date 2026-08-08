@@ -6,8 +6,8 @@ import { runChatAgent, ChatAgentInputError, type ChatMessage } from "../src/serv
 
 // ---------------------------------------------------------------------------
 // Vercel serverless entry point — exports a bare Express app (no listen()).
-// Vercel's @vercel/node builder wraps it as a serverless function mounted at
-// /api, so all routes here must include the "/api" prefix.
+// Vercel's @vercel/node builder mounts this function at /api, so route paths
+// inside the app should be defined relative to that function's root.
 // ---------------------------------------------------------------------------
 
 const app = express();
@@ -30,7 +30,7 @@ app.use(
 app.use(express.json({ limit: "100kb" }));
 
 // ---------------------------------------------------------------------------
-// Rate limiting — /api/chat is capped tighter since each call costs money.
+// Rate limiting — /chat is capped tighter since the function is mounted at /api.
 // ---------------------------------------------------------------------------
 const globalApiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -38,7 +38,7 @@ const globalApiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use("/api", globalApiLimiter);
+app.use(globalApiLimiter);
 
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -51,7 +51,7 @@ const chatLimiter = rateLimit({
 // ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
-app.get("/api/health", (_req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({
     status: "healthy",
     env: process.env.NODE_ENV || "development",
@@ -60,7 +60,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
   });
 });
 
-app.post("/api/chat", chatLimiter, async (req: Request, res: Response, next: NextFunction) => {
+app.post("/chat", chatLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { messages } = req.body as { messages?: ChatMessage[] };
     if (!messages || !Array.isArray(messages)) {
