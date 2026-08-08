@@ -9,12 +9,19 @@ const MAX_MESSAGE_CHARS = 2000; // max length per individual message
 const MAX_OUTPUT_TOKENS = 700;
 const REQUEST_TIMEOUT_MS = 20000;
 
-if (!process.env.GROQ_API_KEY) {
-  // Fail fast at import time rather than on the first real request.
-  throw new Error("GROQ_API_KEY is not set. Add it to your environment before starting the server.");
+// Lazy-initialized so the serverless function doesn't crash at import time
+// on cold starts when the env var hasn't been injected yet (Vercel injects
+// env vars after module resolution in some runtimes).
+let _groq: Groq | null = null;
+function getGroq(): Groq {
+  if (!_groq) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY is not set. Add it to your Vercel environment variables.");
+    }
+    _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  }
+  return _groq;
 }
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // ---------------------------------------------------------------------------
 // Portfolio knowledge the agent is allowed to talk about.
@@ -211,7 +218,7 @@ async function callGroq(messages: ChatMessage[]): Promise<Groq.Chat.ChatCompleti
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return await withTimeout(
-        groq.chat.completions.create({
+        getGroq().chat.completions.create({
           model: GROQ_MODEL,
           temperature: 0.4,
           max_tokens: MAX_OUTPUT_TOKENS,

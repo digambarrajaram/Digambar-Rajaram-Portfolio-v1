@@ -19,6 +19,15 @@ export default function App() {
   const [healingLogs, setHealingLogs] = useState<string[]>([]);
   const [healingProgress, setHealingProgress] = useState(0);
 
+  // Prevent iOS Safari from restoring the previous session's scroll position
+  // on reload, which snaps to between sections instead of the page top.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const sections = ["hero", "about", "projects", "experience", "skills", "console", "contact"];
     const observerOptions = {

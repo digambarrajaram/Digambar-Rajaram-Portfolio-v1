@@ -270,19 +270,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                 maxHeight: panelTop ? `calc(100dvh - ${panelTop}px)` : undefined,
               }}
             >
-              {/* Close button inside the drawer — always visible on mobile so users
-                  have an obvious way out without hunting for the hamburger. */}
-              <div className="flex justify-end pt-4">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded bg-gray-900 border border-gray-800 hover:border-red-500/40 text-gray-400 hover:text-red-400 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="space-y-1">
+              <div className="space-y-1 pt-4">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
