@@ -272,9 +272,11 @@ export default function Contact() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Name */}
                 <div className="space-y-1.5">
-                  <label htmlFor="name" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
-                    Your Name / Identity
-                  </label>
+                  <div className="min-h-[2.25rem]">
+                    <label htmlFor="name" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
+                      Your Name / Identity
+                    </label>
+                  </div>
                   <input
                     id="name"
                     type="text"
@@ -296,10 +298,12 @@ export default function Contact() {
 
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
-                    Gateway Return Email
-                  </label>
-                  <div className="text-[11px] text-gray-500 mt-1">Where we can send a reply (your contact email)</div>
+                  <div className="min-h-[2.25rem]">
+                    <label htmlFor="email" className="font-mono text-[10px] text-gray-400 uppercase tracking-wider block">
+                      Gateway Return Email
+                    </label>
+                    <div className="text-[11px] text-gray-500 mt-1">Where we can send a reply (your contact email)</div>
+                  </div>
                   <input
                     id="email"
                     type="email"
