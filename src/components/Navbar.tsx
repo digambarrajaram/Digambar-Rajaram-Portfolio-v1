@@ -13,6 +13,7 @@ interface NavbarProps {
 
 export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   // Distance from the top of the viewport to the bottom of the fixed navbar.
   // Used to position the mobile dropdown panel exactly below the header,
@@ -46,12 +47,14 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
   const openDrawer = () => {
     pinBody();
+    setIsClosing(false);
     isOpenRef.current = true;
     setIsOpen(true);
   };
 
   const closeDrawer = () => {
     isOpenRef.current = false;
+    setIsClosing(true);
     setIsOpen(false);
     setShowPhone(false);
     setCopiedPhone(false);
@@ -140,26 +143,38 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     );
 
     if (isOpen) {
-      // When the body is pinned (position:fixed), window.scrollY is always 0,
-      // so we use offsetTop (document-relative) instead of
-      // getBoundingClientRect().top + window.scrollY (viewport-relative).
+      const prevY = getSavedScrollY();
       const targetY = Math.max(
         0,
         element.offsetTop - navHeight - bannerOffset
       );
 
+      console.log(
+        "[Navbar] handleNavClick — id:", id,
+        "| targetY:", targetY,
+        "| savedScrollY:", prevY,
+        "| diff:", targetY - prevY,
+        "| window.scrollY:", window.scrollY,
+      );
+
       isOpenRef.current = false;
+      setIsClosing(true);
       setIsOpen(false);
       setShowPhone(false);
       setCopiedPhone(false);
 
-      // If we're already at this section (within a few px), close without
-      // an explicit scroll target to avoid a visible jump on mobile.
-      const prevY = getSavedScrollY();
-      if (Math.abs(targetY - prevY) < 60) {
-        unpinBody();
+      if (Math.abs(targetY - prevY) < 10) {
+        // Already at this section — unpin without scrolling.
+        console.log("[Navbar] handleNavClick — within 10px, skip scroll");
+        unpinBody(null);
       } else {
-        unpinBody(targetY);
+        // Different section — unpin without auto-scroll, then fire one
+        // smooth scroll so there's only a single scroll action.
+        console.log("[Navbar] handleNavClick — scroll to", targetY);
+        unpinBody(null);
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: targetY, behavior: "smooth" });
+        });
       }
     } else {
       scrollToElement(id);
@@ -261,7 +276,13 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
             {/* Mobile Menu Button */}
             <div className="flex md:hidden items-center">
               <button
-                onClick={() => isOpen ? closeDrawer() : openDrawer()}
+                onClick={() => {
+                  console.log("[Navbar] hamburger onClick — isOpen:", isOpen, "timestamp:", performance.now());
+                  isOpen ? closeDrawer() : openDrawer();
+                }}
+                onTouchStart={() => {
+                  console.log("[Navbar] hamburger onTouchStart — isOpen:", isOpen, "timestamp:", performance.now());
+                }}
                 className="text-gray-400 hover:text-white p-2"
                 aria-label={isOpen ? "Close menu" : "Open menu"}
                 aria-expanded={isOpen}
@@ -277,17 +298,20 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       {/* Mobile Menu — rendered outside <nav> so the nav's backdrop-blur-md
            (present when scrolled) doesn't create a containing block that
            breaks position:fixed on iOS Safari. */}
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => setIsClosing(false)}>
         {isOpen && (
           <>
-            {/* Full-viewport backdrop — blocks scroll/poke-through, tap to close */}
+            {/* Full-viewport backdrop — blocks scroll/poke-through, tap to close.
+                pointer-events-none is applied synchronously when isClosing flips
+                so a fast second tap during the 150ms exit animation doesn't land
+                on this still-mounted backdrop instead of the button underneath. */}
             <motion.div
               key="nav-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-40 md:hidden"
+              className={`fixed inset-0 z-40 md:hidden ${isClosing ? 'pointer-events-none' : ''}`}
               style={{ backgroundColor: '#030303' }}
               onClick={closeDrawer}
               aria-hidden="true"
@@ -304,7 +328,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed left-0 right-0 z-50 md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3"
+              className={`fixed left-0 right-0 z-50 md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3 ${isClosing ? 'pointer-events-none' : ''}`}
               data-scroll-lock-scrollable
               style={{
                 backgroundColor: '#060606',

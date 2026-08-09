@@ -130,7 +130,7 @@ export default function ProjectGallery() {
               placeholder="Search stack, logs, title..."
               value={searchQuery === " " ? "" : searchQuery}
               onChange={(e) => setSearchQuery(e.target.value === "" ? " " : e.target.value)}
-              className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 pl-10 pr-4 py-2 rounded-lg transition-all outline-none"
+              className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-base sm:text-sm text-gray-200 pl-10 pr-4 py-2 rounded-lg transition-all outline-none"
             />
           </div>
         </div>

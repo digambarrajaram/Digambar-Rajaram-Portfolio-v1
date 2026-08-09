@@ -9,6 +9,7 @@ export function getSavedScrollY(): number {
 }
 let originalBodyStyle: Record<string, string> = {};
 let originalHtmlOverflow = "";
+let activeTouchMoveListeners = 0;
 
 function handleTouchMove(e: TouchEvent) {
   const target = e.target as HTMLElement | null;
@@ -20,6 +21,7 @@ export function pinBody() {
   if (lockCount === 0) {
     const body = document.body;
     savedScrollY = window.scrollY;
+    console.log("[bodyPin] pinBody — savedScrollY =", savedScrollY);
 
     originalBodyStyle = {
       position: body.style.position,
@@ -42,11 +44,13 @@ export function pinBody() {
     document.documentElement.style.overflow = "hidden";
 
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    activeTouchMoveListeners++;
+    console.log("[bodyPin] touchmove listener ADDED — active count:", activeTouchMoveListeners);
   }
   lockCount++;
 }
 
-export function unpinBody(scrollTo?: number) {
+export function unpinBody(scrollTo?: number | null) {
   lockCount = Math.max(0, lockCount - 1);
   if (lockCount > 0) return;
 
@@ -66,7 +70,17 @@ export function unpinBody(scrollTo?: number) {
   body.style.overscrollBehavior = originalBodyStyle.overscrollBehavior || "";
   document.documentElement.style.overflow = originalHtmlOverflow || "";
 
-  const target = scrollTo ?? savedScrollY;
+  // null means "skip scroll entirely" — caller will handle it.
+  // undefined means "restore to savedScrollY".
+  const skipScroll = scrollTo === null;
+  const target: number = scrollTo != null ? scrollTo : savedScrollY;
+
+  console.log(
+    "[bodyPin] unpinBody — savedScrollY =", savedScrollY,
+    "| scrollTo arg =", scrollTo,
+    "| skipScroll =", skipScroll,
+    "| target =", skipScroll ? "SKIPPED" : target,
+  );
 
   // Clear saved state so a second unpin call is a true no-op.
   originalBodyStyle = {};
@@ -74,11 +88,16 @@ export function unpinBody(scrollTo?: number) {
   savedScrollY = 0;
 
   document.removeEventListener("touchmove", handleTouchMove);
+  activeTouchMoveListeners = Math.max(0, activeTouchMoveListeners - 1);
+  console.log("[bodyPin] touchmove listener REMOVED — active count:", activeTouchMoveListeners);
 
-  // Batch the scroll into the next render frame so the body style
-  // restoration (above) and the scroll happen in the same paint.
-  // Avoids a visible flash of the wrong scroll position on mobile.
-  requestAnimationFrame(() => {
-    window.scrollTo(0, target);
-  });
+  if (!skipScroll) {
+    // Batch the scroll into the next render frame so the body style
+    // restoration (above) and the scroll happen in the same paint.
+    // Avoids a visible flash of the wrong scroll position on mobile.
+    requestAnimationFrame(() => {
+      console.log("[bodyPin] unpinBody rAF — window.scrollTo(0,", target, ")");
+      window.scrollTo(0, target);
+    });
+  }
 }

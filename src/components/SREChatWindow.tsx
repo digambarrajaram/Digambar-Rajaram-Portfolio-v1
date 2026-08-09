@@ -31,6 +31,7 @@ const MAX_INPUT_LENGTH = 2000;
 
 export default function SREChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [isContactVisible, setIsContactVisible] = useState(false);
 
   // Guard against double-unlock on unmount.
@@ -238,12 +239,14 @@ export default function SREChatWindow() {
 
   const openChat = () => {
     pinBody(); // synchronous — reflow happens before paint
+    setIsClosing(false);
     isOpenRef.current = true;
     setIsOpen(true);
   };
 
   const closeChat = () => {
     isOpenRef.current = false;
+    setIsClosing(true);
     setIsOpen(false);
     unpinBody();
   };
@@ -272,7 +275,13 @@ export default function SREChatWindow() {
           <motion.button
             ref={toggleBtnRef}
             id="chat-toggle-btn"
-            onClick={openChat}
+            onClick={() => {
+              console.log("[Chat] toggle onClick — timestamp:", performance.now());
+              openChat();
+            }}
+            onTouchStart={() => {
+              console.log("[Chat] toggle onTouchStart — timestamp:", performance.now());
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="relative p-4 rounded-full text-gray-950 font-bold shadow-[0_0_20px_rgba(255,212,0,0.3)] hover:shadow-[0_0_30px_rgba(255,212,0,0.5)] transition-all cursor-pointer flex items-center justify-center bg-accent text-gray-950"
@@ -294,17 +303,20 @@ export default function SREChatWindow() {
            The backdrop prevents page content from bleeding through behind
            the panel, and clicking it closes the chat. dvh units account for
            mobile browser chrome (address bar show/hide) correctly. */}
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => setIsClosing(false)}>
         {isOpen && (
           <>
-            {/* Backdrop: lighter overlay so background remains visible but de-emphasized */}
+            {/* Backdrop: lighter overlay so background remains visible but de-emphasized.
+                pointer-events-none is applied synchronously when isClosing flips so
+                a fast second tap during the exit animation doesn't land on the
+                still-mounted backdrop instead of the button underneath. */}
             <motion.div
               key="chat-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
-              className="fixed inset-0 z-[60]"
+              className={`fixed inset-0 z-[60] ${isClosing ? 'pointer-events-none' : ''}`}
               style={{ backgroundColor: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)' }}
               onClick={closeChat}
               aria-hidden="true"
@@ -320,7 +332,7 @@ export default function SREChatWindow() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-[440px] h-[100dvh] sm:h-[90dvh] max-h-none sm:max-h-[600px] bg-gray-950 border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[70]"
+              className={`fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-[440px] h-[100dvh] sm:h-[90dvh] max-h-none sm:max-h-[600px] bg-gray-950 border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[70] ${isClosing ? 'pointer-events-none' : ''}`}
             >
             {/* Header / Control Bar */}
             <div className="p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between">
@@ -482,7 +494,7 @@ export default function SREChatWindow() {
                 disabled={isLoading}
                 maxLength={MAX_INPUT_LENGTH}
                 aria-label="Chat message"
-                className="flex-1 bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/10 text-xs text-gray-200 px-3 py-2.5 rounded-lg outline-none transition-all placeholder:text-gray-600 font-sans disabled:opacity-60"
+                className="flex-1 bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/10 text-base sm:text-xs text-gray-200 px-3 py-2.5 rounded-lg outline-none transition-all placeholder:text-gray-600 font-sans disabled:opacity-60"
               />
               <button
                 type="submit"

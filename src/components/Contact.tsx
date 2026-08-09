@@ -16,6 +16,7 @@ export default function Contact() {
     role: "DevOps Engineer",
     message: ""
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -34,6 +35,14 @@ export default function Contact() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the field-level error as soon as the user starts typing.
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
   };
 
   const handleCopyEmail = () => {
@@ -64,7 +73,20 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+
+    // Validate required fields and collect per-field errors.
+    const nextErrors: Record<string, string> = {};
+    if (!formData.name.trim()) nextErrors.name = "Name is required.";
+    if (!formData.email.trim()) {
+      nextErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      nextErrors.email = "Please enter a valid email address.";
+    }
+    if (!formData.message.trim()) nextErrors.message = "Message is required.";
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(false);
@@ -261,8 +283,15 @@ export default function Contact() {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Enter name"
-                    className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none"
+                    className={`w-full bg-gray-950 border text-base sm:text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none ${
+                      errors.name
+                        ? "border-red-500/70 focus:border-red-500 focus:ring-1 focus:ring-red-500/30"
+                        : "border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/20"
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="text-[11px] text-red-400 font-sans">{errors.name}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -279,8 +308,15 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Enter email"
-                    className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none"
+                    className={`w-full bg-gray-950 border text-base sm:text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none ${
+                      errors.email
+                        ? "border-red-500/70 focus:border-red-500 focus:ring-1 focus:ring-red-500/30"
+                        : "border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/20"
+                    }`}
                   />
+                  {errors.email && (
+                    <p className="text-[11px] text-red-400 font-sans">{errors.email}</p>
+                  )}
                 </div>
               </div>
 
@@ -295,7 +331,7 @@ export default function Contact() {
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className="w-full appearance-none bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none pr-10"
+                    className="w-full appearance-none bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/20 text-base sm:text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none pr-10"
                     aria-label="Project Domain or Target Role"
                   >
                     {rolesList.map((role) => (
@@ -323,8 +359,15 @@ export default function Contact() {
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder="Type your message here..."
-                  className="w-full bg-gray-950 border border-gray-900 hover:border-gray-800 focus:border-accent focus:ring-1 focus:ring-accent/20 text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none resize-none"
+                  className={`w-full bg-gray-950 border text-base sm:text-sm text-gray-200 px-4 py-2.5 rounded-lg transition-all outline-none resize-none ${
+                    errors.message
+                      ? "border-red-500/70 focus:border-red-500 focus:ring-1 focus:ring-red-500/30"
+                      : "border-gray-800 hover:border-gray-700 focus:border-accent focus:ring-1 focus:ring-accent/20"
+                  }`}
                 />
+                {errors.message && (
+                  <p className="text-[11px] text-red-400 font-sans">{errors.message}</p>
+                )}
               </div>
 
               {/* Feedback messages */}
@@ -366,7 +409,6 @@ export default function Contact() {
                   </>
                 )}
               </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">Send Message</p>
             </form>
           </motion.div>
         </div>
