@@ -32,7 +32,7 @@ const chatLimiter = rateLimit({
   message: { error: "Too many messages sent. Please wait a moment before trying again." },
 });
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get(["/health", "/api/health"], (_req: Request, res: Response) => {
   res.json({
     status: "healthy",
     env: process.env.NODE_ENV || "development",
@@ -41,7 +41,7 @@ app.get("/health", (_req: Request, res: Response) => {
   });
 });
 
-app.post("/chat", chatLimiter, async (req: Request, res: Response, next: NextFunction) => {
+app.post(["/chat", "/api/chat"], chatLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { messages } = req.body as { messages?: ChatMessage[] };
     if (!messages || !Array.isArray(messages)) {

@@ -96,13 +96,13 @@ export default function ProjectGallery() {
           {/* Categories pill list - horizontally scrollable on small screens with gradient affordance */}
           <div className="relative w-full md:w-auto">
             <div
-              ref={(el) => (containerRef.current = el)}
+              ref={(el) => { containerRef.current = el; }}
               className="flex gap-1.5 w-full md:w-auto overflow-x-auto md:overflow-visible whitespace-nowrap md:flex-wrap md:justify-start px-1 hide-scrollbar"
             >
               {categories.map((cat, idx) => (
                 <button
                   key={cat}
-                  ref={(el) => (tabsRef.current[idx] = el)}
+                  ref={(el) => { tabsRef.current[idx] = el; }}
                   onClick={() => setSelectedCategory(cat)}
                   className={`inline-flex items-center px-3 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-medium min-w-max whitespace-nowrap ${
                     selectedCategory === cat
@@ -115,9 +115,11 @@ export default function ProjectGallery() {
               ))}
             </div>
 
-            {/* Left/Right gradient fades to indicate horizontal overflow on small screens */}
-            <div className="pointer-events-none md:hidden absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-gray-950 to-transparent" />
-            <div className="pointer-events-none md:hidden absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-950 to-transparent" />
+            {/* Left/Right gradient fades to indicate horizontal overflow on small screens.
+                 The toolbar is bg-gray-950/45 over the section's bg-gray-950, so the effective
+                 background is ~#030712 at ~72% opacity. from-gray-950/90 approximates this. */}
+            <div className="pointer-events-none md:hidden absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-gray-950/95 to-transparent" />
+            <div className="pointer-events-none md:hidden absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-950/95 to-transparent" />
           </div>
 
           {/* Search bar */}
@@ -146,12 +148,12 @@ export default function ProjectGallery() {
                 transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
                 key={project.title}
                 onClick={() => setSelectedProject(project)}
-                className="glass-panel glass-panel-hover p-6 rounded-xl border border-gray-900 flex flex-col justify-between items-start orange-glow-sm cursor-pointer group relative overflow-hidden"
+                className="glass-panel glass-panel-hover p-5 sm:p-6 rounded-xl border border-gray-900 flex flex-col justify-between items-start orange-glow-sm cursor-pointer group relative overflow-hidden"
               >
                 <div>
                   {/* Category Badge & Sparkles if AI */}
                   <div className="flex items-center justify-between w-full mb-4">
-                    <span className="font-mono text-[10px] text-accent font-semibold tracking-wider uppercase bg-accent/10 px-2 py-0.5 rounded border border-accent/10">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-accent font-semibold tracking-wider uppercase bg-accent/10 px-2 py-0.5 rounded border border-accent/10">
                       {project.category}
                     </span>
                     {project.category.includes("AI") && (
@@ -160,29 +162,29 @@ export default function ProjectGallery() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-display font-bold text-lg text-white group-hover:text-accent transition-colors tracking-tight leading-snug text-center md:text-left">
+                  <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-accent transition-colors tracking-tight leading-snug">
                     {project.title}
                   </h3>
 
                   {/* Short Description */}
-                  <p className="text-xs text-gray-400 mt-2.5 leading-relaxed line-clamp-3">
+                  <p className="text-xs sm:text-sm text-gray-400 mt-2.5 leading-relaxed line-clamp-3">
                     {project.description}
                   </p>
                 </div>
 
                 <div className="w-full mt-6">
                   {/* Technologies tags (max 4) */}
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="flex flex-wrap gap-1.5 mb-4">
                     {project.technologies.slice(0, 4).map((tech) => (
                       <span
                         key={tech}
-                        className="font-mono text-[9px] text-gray-400 bg-gray-900 border border-gray-900/60 px-1.5 py-0.5 rounded"
+                        className="font-mono text-[10px] sm:text-[11px] text-gray-400 bg-gray-900 border border-gray-900/60 px-2 py-0.5 rounded"
                       >
                         {tech}
                       </span>
                     ))}
                     {project.technologies.length > 4 && (
-                      <span className="font-mono text-[9px] text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-[10px] sm:text-[11px] text-gray-500 bg-gray-900 px-2 py-0.5 rounded">
                         +{project.technologies.length - 4} more
                       </span>
                     )}

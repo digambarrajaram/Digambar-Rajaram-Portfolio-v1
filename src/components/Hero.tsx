@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { personalInfo, stats } from "../data";
+import { scrollToElement } from "../hooks/scrollTo";
 
 interface HeroProps {
   isChaosMode: boolean;
@@ -226,7 +227,7 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
           >
             <button
               onClick={() => {
-                document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+                scrollToElement("projects");
               }}
               className="px-6 py-3 bg-accent hover:bg-accent-hover text-gray-950 font-sans font-bold rounded-lg shadow-[0_0_25px_rgba(255,212,0,0.3)] hover:shadow-[0_0_35px_rgba(255,212,0,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center space-x-2 cursor-pointer text-sm tracking-wider uppercase"
             >
@@ -236,7 +237,7 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
 
             <button
               onClick={() => {
-                document.getElementById("console")?.scrollIntoView({ behavior: "smooth" });
+                scrollToElement("console");
               }}
               className="px-6 py-3 bg-gray-900 hover:bg-gray-850 text-white font-mono rounded-lg border border-gray-800 hover:border-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center space-x-2 cursor-pointer text-sm"
             >
@@ -527,7 +528,7 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
           ease: "easeInOut",
         }}
         onClick={() => {
-          document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+          scrollToElement("about");
         }}
         className="mt-20 flex flex-col items-center space-y-1.5 cursor-pointer text-gray-500 hover:text-accent transition-colors font-mono text-[10px] uppercase tracking-widest"
       >

@@ -4,7 +4,9 @@
       "Bash(npx tsc *)",
       "Bash(npx vite *)",
       "Bash(git check-ignore *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "WebFetch(domain:digambarrajaram.cloud)",
+      "Bash(node -e ' *)"
     ]
   }
 }

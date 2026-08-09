@@ -4,6 +4,9 @@
 
 let lockCount = 0;
 let savedScrollY = 0;
+export function getSavedScrollY(): number {
+  return savedScrollY;
+}
 let originalBodyStyle: Record<string, string> = {};
 let originalHtmlOverflow = "";
 
@@ -43,9 +46,14 @@ export function pinBody() {
   lockCount++;
 }
 
-export function unpinBody() {
+export function unpinBody(scrollTo?: number) {
   lockCount = Math.max(0, lockCount - 1);
   if (lockCount > 0) return;
+
+  // Guard against double-unpin (e.g. closeDrawer racing with
+  // handleNavClick) — if we already restored, originalBodyStyle
+  // is empty and this is a no-op.
+  if (Object.keys(originalBodyStyle).length === 0) return;
 
   const body = document.body;
 
@@ -58,7 +66,17 @@ export function unpinBody() {
   body.style.overscrollBehavior = originalBodyStyle.overscrollBehavior || "";
   document.documentElement.style.overflow = originalHtmlOverflow || "";
 
+  const target = scrollTo ?? savedScrollY;
+
+  // Clear saved state so a second unpin call is a true no-op.
+  originalBodyStyle = {};
+  originalHtmlOverflow = "";
+  savedScrollY = 0;
+
   document.removeEventListener("touchmove", handleTouchMove);
 
-  window.scrollTo(0, savedScrollY);
+  // If a target scroll position is provided, go there directly instead of
+  // restoring the saved position — avoids two competing scrollTo calls
+  // which iOS Safari would drop the second one.
+  window.scrollTo(0, target);
 }

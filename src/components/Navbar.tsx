@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Menu, X, Github, Linkedin, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { personalInfo, socialLinks } from "../data";
-import { useScrollLock } from "../hooks/useScrollLock";
+import { pinBody, unpinBody } from "../hooks/bodyPin";
+import { scrollToElement } from "../hooks/scrollTo";
 
 interface NavbarProps {
   activeSection: string;
@@ -19,8 +20,26 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   // where the panel rendered too high / overlapped the banner in chaos mode).
   const [panelTop, setPanelTop] = useState(0);
   const navRef = useRef<HTMLElement>(null);
+  const isOpenRef = useRef(false);
 
-  useScrollLock(isOpen);
+  // Guard against double-unlock on unmount.
+  useEffect(() => {
+    return () => {
+      if (isOpenRef.current) unpinBody();
+    };
+  }, []);
+
+  const openDrawer = () => {
+    pinBody();
+    isOpenRef.current = true;
+    setIsOpen(true);
+  };
+
+  const closeDrawer = () => {
+    isOpenRef.current = false;
+    setIsOpen(false);
+    unpinBody();
+  };
 
   useEffect(() => {
     const updatePanelTop = () => {
@@ -45,7 +64,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") closeDrawer();
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -92,7 +111,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     { id: "contact", label: "Contact" },
   ];
 
-  const scrollToSection = (id: string) => {
+  const handleNavClick = (id: string) => {
     const element = document.getElementById(id);
     if (!element) return;
 
@@ -103,24 +122,21 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       10
     );
 
-    const targetY = Math.max(
-      0,
-      element.getBoundingClientRect().top + window.scrollY - navHeight - bannerOffset
-    );
-
-    window.scrollTo({ top: targetY, behavior: "smooth" });
-  };
-
-  const handleNavClick = (id: string) => {
-    const shouldDelayScroll = isOpen;
-    setIsOpen(false);
-
-    if (shouldDelayScroll) {
-      // Wait for the exit animation (150ms) to finish before scrolling so we
-      // don't scroll the page while the panel is still visually closing.
-      window.setTimeout(() => scrollToSection(id), 160);
+    if (isOpen) {
+      // When the body is pinned (position:fixed), window.scrollY is always 0,
+      // so we use offsetTop (document-relative) instead of
+      // getBoundingClientRect().top + window.scrollY (viewport-relative).
+      const targetY = Math.max(
+        0,
+        element.offsetTop - navHeight - bannerOffset
+      );
+      // Unpin the body and scroll to the target in a single operation —
+      // avoids the two-competing-scrollTo race that iOS Safari drops.
+      isOpenRef.current = false;
+      setIsOpen(false);
+      unpinBody(targetY);
     } else {
-      scrollToSection(id);
+      scrollToElement(id);
     }
   };
 
@@ -219,7 +235,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
             {/* Mobile Menu Button */}
             <div className="flex md:hidden items-center">
               <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => isOpen ? closeDrawer() : openDrawer()}
                 className="text-gray-400 hover:text-white p-2"
                 aria-label={isOpen ? "Close menu" : "Open menu"}
                 aria-expanded={isOpen}
@@ -247,7 +263,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               transition={{ duration: 0.15 }}
               className="fixed inset-0 z-40 md:hidden"
               style={{ backgroundColor: '#030303' }}
-              onClick={() => setIsOpen(false)}
+              onClick={closeDrawer}
               aria-hidden="true"
             />
 
