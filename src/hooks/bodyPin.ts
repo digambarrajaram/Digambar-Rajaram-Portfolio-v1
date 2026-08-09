@@ -75,8 +75,10 @@ export function unpinBody(scrollTo?: number) {
 
   document.removeEventListener("touchmove", handleTouchMove);
 
-  // If a target scroll position is provided, go there directly instead of
-  // restoring the saved position — avoids two competing scrollTo calls
-  // which iOS Safari would drop the second one.
-  window.scrollTo(0, target);
+  // Batch the scroll into the next render frame so the body style
+  // restoration (above) and the scroll happen in the same paint.
+  // Avoids a visible flash of the wrong scroll position on mobile.
+  requestAnimationFrame(() => {
+    window.scrollTo(0, target);
+  });
 }

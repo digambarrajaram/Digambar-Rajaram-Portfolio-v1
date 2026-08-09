@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, Github, Linkedin, Mail, Phone } from "lucide-react";
+import { Menu, X, Github, Linkedin, Mail, Phone, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { personalInfo, socialLinks } from "../data";
-import { pinBody, unpinBody } from "../hooks/bodyPin";
+import { pinBody, unpinBody, getSavedScrollY } from "../hooks/bodyPin";
 import { scrollToElement } from "../hooks/scrollTo";
 
 interface NavbarProps {
@@ -22,6 +22,21 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const navRef = useRef<HTMLElement>(null);
   const isOpenRef = useRef(false);
 
+  // Phone reveal — matches the Contact page behaviour
+  const [showPhone, setShowPhone] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
+
+  const maskPhone = (phone: string) => phone.replace(/\d(?=\d{4})/g, "•");
+
+  const handleRevealPhone = () => {
+    setShowPhone(true);
+    try {
+      navigator.clipboard.writeText(personalInfo.phone);
+      setCopiedPhone(true);
+      setTimeout(() => setCopiedPhone(false), 2000);
+    } catch (_) {}
+  };
+
   // Guard against double-unlock on unmount.
   useEffect(() => {
     return () => {
@@ -38,6 +53,8 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const closeDrawer = () => {
     isOpenRef.current = false;
     setIsOpen(false);
+    setShowPhone(false);
+    setCopiedPhone(false);
     unpinBody();
   };
 
@@ -130,11 +147,20 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
         0,
         element.offsetTop - navHeight - bannerOffset
       );
-      // Unpin the body and scroll to the target in a single operation —
-      // avoids the two-competing-scrollTo race that iOS Safari drops.
+
       isOpenRef.current = false;
       setIsOpen(false);
-      unpinBody(targetY);
+      setShowPhone(false);
+      setCopiedPhone(false);
+
+      // If we're already at this section (within a few px), close without
+      // an explicit scroll target to avoid a visible jump on mobile.
+      const prevY = getSavedScrollY();
+      if (Math.abs(targetY - prevY) < 60) {
+        unpinBody();
+      } else {
+        unpinBody(targetY);
+      }
     } else {
       scrollToElement(id);
     }
@@ -335,9 +361,26 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                     <Mail size={12} className="text-accent" />
                     <span className="break-all">{personalInfo.email}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone size={12} className="text-accent" />
-                    <span>{personalInfo.phone}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Phone size={12} className="text-accent shrink-0" />
+                      <span className="truncate">
+                        {showPhone ? personalInfo.phone : maskPhone(personalInfo.phone)}
+                      </span>
+                    </div>
+                    {!showPhone ? (
+                      <button
+                        onClick={handleRevealPhone}
+                        className="ml-2 shrink-0 px-2 py-0.5 text-[10px] font-mono text-accent bg-accent/10 border border-accent/20 rounded hover:bg-accent/20 transition-colors"
+                      >
+                        Reveal
+                      </button>
+                    ) : (
+                      <span className="ml-2 shrink-0 text-[10px] font-mono text-green-400 flex items-center gap-1">
+                        <Check size={10} />
+                        Copied
+                      </span>
+                    )}
                   </div>
                 </div>
 

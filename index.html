@@ -5,17 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <title>Digambar Rajaram — SRE & AI Platform Engineer</title>
+    <script>
+      // Must run before the browser parses <body> — iOS Safari restores
+      // the previous session's scroll position during body layout, so
+      // setting scrollRestoration='manual' in <head> prevents it.
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      // Belt-and-suspenders: force top on first paint in case the browser
+      // already started restoring before this script executed.
+      window.addEventListener('DOMContentLoaded', function () {
+        window.scrollTo(0, 0);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Prevent iOS Safari from restoring a mid-page scroll position on
-      // reload — must run synchronously before any paint, so a React
-      // useEffect is too late.
-      if ('scrollRestoration' in window.history) {
-        window.history.scrollRestoration = 'manual';
-      }
-    </script>
   </body>
 </html>

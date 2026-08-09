@@ -2,7 +2,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { runChatAgent, ChatAgentInputError, type ChatMessage } from "../src/server/chatAgent";
+import { runChatAgent, ChatAgentInputError, type ChatMessage } from "./_lib/chatAgent";
 
 const app = express();
 
