@@ -6,7 +6,8 @@
       "Bash(git check-ignore *)",
       "Bash(python3 *)",
       "WebFetch(domain:digambarrajaram.cloud)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(git add *)"
     ]
   }
 }
