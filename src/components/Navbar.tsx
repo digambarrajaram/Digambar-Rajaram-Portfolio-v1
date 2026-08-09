@@ -58,7 +58,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     setIsOpen(false);
     setShowPhone(false);
     setCopiedPhone(false);
-    unpinBody();
+    unpinBody(null);
   };
 
   useEffect(() => {
@@ -144,17 +144,14 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
     if (isOpen) {
       const prevY = getSavedScrollY();
+      // Use getBoundingClientRect + savedScrollY instead of offsetTop.
+      // offsetTop is relative to offsetParent, which can shift if any
+      // ancestor has position/transform set (e.g. a framer-motion wrapper).
+      // getBoundingClientRect is always viewport-relative, and prevY gives
+      // us the true document-scroll offset captured before the body was pinned.
       const targetY = Math.max(
         0,
-        element.offsetTop - navHeight - bannerOffset
-      );
-
-      console.log(
-        "[Navbar] handleNavClick — id:", id,
-        "| targetY:", targetY,
-        "| savedScrollY:", prevY,
-        "| diff:", targetY - prevY,
-        "| window.scrollY:", window.scrollY,
+        element.getBoundingClientRect().top + prevY - navHeight - bannerOffset
       );
 
       isOpenRef.current = false;
@@ -165,12 +162,10 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
       if (Math.abs(targetY - prevY) < 10) {
         // Already at this section — unpin without scrolling.
-        console.log("[Navbar] handleNavClick — within 10px, skip scroll");
         unpinBody(null);
       } else {
         // Different section — unpin without auto-scroll, then fire one
         // smooth scroll so there's only a single scroll action.
-        console.log("[Navbar] handleNavClick — scroll to", targetY);
         unpinBody(null);
         requestAnimationFrame(() => {
           window.scrollTo({ top: targetY, behavior: "smooth" });
@@ -276,13 +271,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
             {/* Mobile Menu Button */}
             <div className="flex md:hidden items-center">
               <button
-                onClick={() => {
-                  console.log("[Navbar] hamburger onClick — isOpen:", isOpen, "timestamp:", performance.now());
-                  isOpen ? closeDrawer() : openDrawer();
-                }}
-                onTouchStart={() => {
-                  console.log("[Navbar] hamburger onTouchStart — isOpen:", isOpen, "timestamp:", performance.now());
-                }}
+                onClick={() => isOpen ? closeDrawer() : openDrawer()}
                 className="text-gray-400 hover:text-white p-2"
                 aria-label={isOpen ? "Close menu" : "Open menu"}
                 aria-expanded={isOpen}

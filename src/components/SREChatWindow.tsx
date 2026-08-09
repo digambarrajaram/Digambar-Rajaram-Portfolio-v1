@@ -248,7 +248,7 @@ export default function SREChatWindow() {
     isOpenRef.current = false;
     setIsClosing(true);
     setIsOpen(false);
-    unpinBody();
+    unpinBody(null);
   };
 
   const handleReset = () => {
@@ -275,13 +275,7 @@ export default function SREChatWindow() {
           <motion.button
             ref={toggleBtnRef}
             id="chat-toggle-btn"
-            onClick={() => {
-              console.log("[Chat] toggle onClick — timestamp:", performance.now());
-              openChat();
-            }}
-            onTouchStart={() => {
-              console.log("[Chat] toggle onTouchStart — timestamp:", performance.now());
-            }}
+            onClick={openChat}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="relative p-4 rounded-full text-gray-950 font-bold shadow-[0_0_20px_rgba(255,212,0,0.3)] hover:shadow-[0_0_30px_rgba(255,212,0,0.5)] transition-all cursor-pointer flex items-center justify-center bg-accent text-gray-950"

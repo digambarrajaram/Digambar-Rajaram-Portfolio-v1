@@ -40,7 +40,7 @@ automated DR failover with Ansible, performed OS hardening/VAPT remediation acro
 built an internal infrastructure asset management platform (Spring Boot, MySQL, ReactJS).
 
 Core stack: LangGraph, LangChain, LangSmith, AWS Bedrock (Nova Pro), MCP servers, RAG pipelines,
-FastAPI, EKS, Terraform, Ansible, Docker, Helm, Jenkins, GitHub Actions, Prometheus, Grafana,
+FastAPI, EKS, Terraform, Ansible, Argo CD, Docker, Helm, Jenkins, GitHub Actions, Prometheus, Grafana,
 Grafana Loki, CloudWatch, ELK Stack, Python, Shell scripting.
 
 Flagship projects:
@@ -56,6 +56,8 @@ Flagship projects:
 - AI-Driven DevOps Incident Manager: GitHub Actions failure injection + CloudWatch-driven automated
   root-cause diagnosis, target diagnosis time under 2 minutes.
 - EKS GitOps Production Architecture: multi-AZ EKS cluster with ArgoCD + Kustomize, IRSA/OIDC.
+- Enterprise DevOps CI/CD Pipeline: Jenkins-based Java microservice pipeline with SonarQube static
+  analysis, Docker/Maven build stages, and Ansible-driven zero-downtime blue-green deployment.
 - Infrastructure Asset Platform: Spring Boot + MySQL + ReactJS internal asset tracking tool.
 - MenuMind AI: LangChain + Groq restaurant branding and menu generator.
 
