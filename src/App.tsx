@@ -313,11 +313,6 @@ export default function App() {
     </div>
   );
 }
-
-  return (
-    <div className={`relative min-h-screen bg-gray-950 font-sans text-gray-100 selection:bg-accent selection:text-gray-950 transition-colors duration-700 ${isChaosMode ? "shadow-[inset_0_0_100px_rgba(239,68,68,0.15)] border-red-500/10" : ""}`}>
-      
-      {/* Dynamic Alert Banner for Chaos Simulation Mode */}
       <AnimatePresence>
         {isChaosMode && (
           <motion.div
