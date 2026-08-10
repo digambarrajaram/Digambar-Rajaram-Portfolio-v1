@@ -197,7 +197,7 @@ export default function ProjectGallery() {
   }, [selectedCategory, categories]);
 
   return (
-    <section id="projects" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative z-0 scroll-mt-20">
+    <section id="projects" className="py-12 md:py-20 bg-gray-950 border-t border-gray-900/40 relative z-0 scroll-mt-20">
       <div className="absolute top-1/2 left-10 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -272,7 +272,7 @@ export default function ProjectGallery() {
         </div>
 
         {filteredProjects.length === 0 && (
-          <div className="text-center py-20 bg-gray-950 rounded-xl border border-dashed border-gray-900 p-8">
+          <div className="text-center py-14 bg-gray-950 rounded-xl border border-dashed border-gray-900 p-8">
             <ShieldAlert size={48} className="text-accent/40 mx-auto mb-4" />
             <h3 className="text-lg font-display font-semibold text-white">No Matching Systems Found</h3>
             <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">

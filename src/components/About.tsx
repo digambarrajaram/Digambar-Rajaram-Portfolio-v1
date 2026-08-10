@@ -19,7 +19,7 @@ const SparkleStar = ({ className = "" }) => (
 
 export default function About() {
   return (
-    <section id="about" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
+    <section id="about" className="py-12 md:py-20 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
       {/* Background ambient lighting */}
       <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 left-10 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none animate-pulse" />
@@ -32,7 +32,7 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center md:text-left max-w-3xl mx-auto relative"
+          className="mb-12 text-center md:text-left max-w-3xl mx-auto relative"
         >
           <SparkleStar className="absolute top-0 left-0 lg:left-1/4 -translate-y-4 text-accent" />
           <SparkleStar className="absolute bottom-0 right-0 lg:right-1/4 translate-y-4 text-accent/60" />
