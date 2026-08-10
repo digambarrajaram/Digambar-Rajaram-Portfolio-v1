@@ -245,6 +245,9 @@ export default function SREChatWindow() {
   };
 
   const closeChat = () => {
+    // Guard against double-close — if the panel is already closing or
+    // closed, ignore subsequent calls so we don't double-unpin.
+    if (!isOpenRef.current) return;
     isOpenRef.current = false;
     setIsClosing(true);
     setIsOpen(false);
@@ -269,7 +272,7 @@ export default function SREChatWindow() {
       {/* Floating Action Button (hidden while chat panel is open to avoid duplicate entry points) */}
       {!isOpen && (
         <div
-          className="fixed right-6 z-50"
+          className="fixed right-6 z-40"
           style={{ bottom: isContactVisible ? '6.5rem' : '1.5rem', transition: 'bottom 0.3s ease' }}
         >
           <motion.button

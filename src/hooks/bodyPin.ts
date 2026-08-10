@@ -10,6 +10,7 @@ export function getSavedScrollY(): number {
 let originalBodyStyle: Record<string, string> = {};
 let originalHtmlOverflow = "";
 let activeTouchMoveListeners = 0;
+let pendingRafId: number | null = null;
 
 function handleTouchMove(e: TouchEvent) {
   const target = e.target as HTMLElement | null;
@@ -18,6 +19,13 @@ function handleTouchMove(e: TouchEvent) {
 }
 
 export function pinBody() {
+  // Cancel any pending scroll-restore rAF from a previous unpin so it
+  // doesn't fire while the body is repinned and corrupt window.scrollY.
+  if (pendingRafId !== null) {
+    cancelAnimationFrame(pendingRafId);
+    pendingRafId = null;
+  }
+
   if (lockCount === 0) {
     const body = document.body;
     savedScrollY = window.scrollY;
@@ -95,7 +103,8 @@ export function unpinBody(scrollTo?: number | null) {
     // Batch the scroll into the next render frame so the body style
     // restoration (above) and the scroll happen in the same paint.
     // Avoids a visible flash of the wrong scroll position on mobile.
-    requestAnimationFrame(() => {
+    pendingRafId = requestAnimationFrame(() => {
+      pendingRafId = null;
       console.log("[bodyPin] unpinBody rAF — window.scrollTo(0,", target, ")");
       window.scrollTo(0, target);
     });

@@ -53,6 +53,8 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   };
 
   const closeDrawer = () => {
+    // Guard against double-close — if already closing or closed, ignore.
+    if (!isOpenRef.current) return;
     isOpenRef.current = false;
     setIsClosing(true);
     setIsOpen(false);
@@ -141,11 +143,19 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
         .getPropertyValue("--banner-offset") || "0",
       10
     );
+    const headerBottom = navHeight + bannerOffset;
+
+    // elementTop is the element's distance from the viewport top.  When the
+    // body is pinned we use getSavedScrollY() (window.scrollY is always 0);
+    // when unpinned we use the live window.scrollY directly.
+    const elementTop = element.getBoundingClientRect().top;
+    // The section is "already visible" only when its top edge is between
+    // just-above-the-viewport and the navbar line — not scrolled past above
+    // (negative elementTop with large magnitude) and not below the fold.
+    const alreadyThere = elementTop >= -40 && elementTop <= headerBottom + 40;
 
     if (isOpen) {
       const prevY = getSavedScrollY();
-      const elementTop = element.getBoundingClientRect().top;
-      const headerBottom = navHeight + bannerOffset;
       const targetY = Math.max(0, elementTop + prevY - headerBottom);
 
       isOpenRef.current = false;
@@ -154,11 +164,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       setShowPhone(false);
       setCopiedPhone(false);
 
-      // If the element's top is already at or above the navbar line in the
-      // pinned viewport, the user is already looking at this section. Restore
-      // to savedScrollY — the instant scroll fires in rAF before paint, so
-      // there's no visible jump.
-      if (elementTop <= headerBottom + 40) {
+      if (alreadyThere) {
+        // Already looking at this section — restore to savedScrollY.
+        // The instant scroll fires in rAF before paint, so no visible jump.
         unpinBody();
       } else {
         // Different section — unpin with an instant scroll to the target.
@@ -167,7 +175,10 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
         unpinBody(targetY);
       }
     } else {
-      scrollToElement(id);
+      // Desktop — only scroll if we aren't already at this section.
+      if (!alreadyThere) {
+        scrollToElement(id);
+      }
     }
   };
 
