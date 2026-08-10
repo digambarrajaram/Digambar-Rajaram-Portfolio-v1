@@ -26,6 +26,7 @@ interface Message {
 }
 
 const DEFAULT_ASSISTANT_MESSAGE: Message = {
+  id: 'assistant-default-1',
   role: "assistant",
   content:
     "👋 Hi — I'm SRE-Copilot. Ask me about Digambar's Kubernetes, AWS, or automation background.\n\nTry: 'Show GitOps architecture', 'Explain an incident response playbook', or 'What projects used LangGraph?'"
@@ -63,6 +64,8 @@ export default function SREChatWindow() {
   });
   const draggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, btnX: 0, btnY: 0 });
+  const pendingRafRef = useRef<number | null>(null);
+  const lastDragPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const onDragStart = (clientX: number, clientY: number) => {
     draggingRef.current = false; // will become true after a small move
@@ -75,16 +78,23 @@ export default function SREChatWindow() {
     // Only start dragging after a 6px threshold to distinguish from tap
     if (!draggingRef.current && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
     draggingRef.current = true;
-    const size = 56 + 16; // button + padding
-    setBtnPos({
-      x: Math.max(0, Math.min(window.innerWidth - size, dragStartRef.current.btnX + dx)),
-      y: Math.max(0, Math.min(window.innerHeight - size, dragStartRef.current.btnY + dy)),
-    });
+    lastDragPosRef.current = { x: Math.max(0, Math.min(window.innerWidth - (56 + 16), dragStartRef.current.btnX + dx)),
+      y: Math.max(0, Math.min(window.innerHeight - (56 + 16), dragStartRef.current.btnY + dy)) };
+    if (pendingRafRef.current === null) {
+      pendingRafRef.current = requestAnimationFrame(() => {
+        pendingRafRef.current = null;
+        if (lastDragPosRef.current) setBtnPos(lastDragPosRef.current);
+      });
+    }
   };
 
   const onDragEnd = () => {
     if (draggingRef.current) {
       try { localStorage.setItem("sre-chat-btn-pos", JSON.stringify(btnPos)); } catch { /* ignore */ }
+    }
+    if (pendingRafRef.current !== null) {
+      cancelAnimationFrame(pendingRafRef.current);
+      pendingRafRef.current = null;
     }
   };
 
@@ -499,7 +509,7 @@ export default function SREChatWindow() {
 
                   return (
                     <div
-                      key={index}
+                      key={msg.id ?? index}
                       className={`flex ${isBot ? "justify-start" : "justify-end"} items-start space-x-2 max-w-full`}
                     >
                       {isBot && (

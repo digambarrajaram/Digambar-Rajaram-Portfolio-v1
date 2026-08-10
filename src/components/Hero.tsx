@@ -5,8 +5,6 @@ import {
   HardDrive, 
   Activity, 
   Terminal, 
-  Copy, 
-  Check, 
   ArrowRight, 
   Layers, 
   Play, 
@@ -45,18 +43,13 @@ const SparkleStar = ({ className = "" }) => (
 );
 
 export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  
   const [activeTab, setActiveTab] = useState<"cluster" | "metrics" | "playbooks">("cluster");
   const [chartData, setChartData] = useState<number[]>([42, 45, 41, 48, 43, 50, 46, 52, 44, 48, 55, 49]);
   const [memoryData, setMemoryData] = useState<number[]>([64, 66, 65, 68, 67, 69, 68, 70, 71, 70, 72, 73]);
   const [activeAlertCount, setActiveAlertCount] = useState(0);
 
-  // Copy email logic
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(personalInfo.email);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
-  };
+  
 
   // Generate dynamic chart data points
   useEffect(() => {
@@ -194,29 +187,6 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
             </motion.p>
           </div>
 
-          {/* Interactive Controller Switch in Text block */}
-          <div className="mt-8 p-4 rounded-xl bg-gray-900/30 border border-gray-900 backdrop-blur-sm max-w-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-xs font-mono text-gray-400 font-bold uppercase tracking-wider">Disaster Simulation Deck</p>
-              <p className="text-[11px] text-gray-500 mt-1">Simulate a real-time cluster incident to demonstrate how my automated self-healing playbooks remediate memory leaks and pod crashes.</p>
-            </div>
-            <button
-              onClick={() => setIsChaosMode(!isChaosMode)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out outline-none mt-3 sm:mt-0 ${
-                isChaosMode ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]" : "bg-gray-700 hover:bg-gray-600"
-              }`}
-              aria-label="Toggle Disaster Simulation"
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-gray-950 shadow ring-0 transition duration-300 ease-in-out flex items-center justify-center ${
-                  isChaosMode ? "translate-x-5" : "translate-x-0"
-                }`}
-              >
-                {isChaosMode ? "🔥" : "🟢"}
-              </span>
-            </button>
-          </div>
-
           {/* CTA Group with neon-hover glow buttons */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -244,23 +214,31 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
               <span>Launch Live Playground</span>
             </button>
 
-            <button
-              onClick={copyToClipboard}
-              className="px-4 py-3 bg-gray-950 hover:bg-gray-900 text-gray-400 hover:text-white font-mono rounded-lg border border-gray-900 hover:border-gray-800 transition-all duration-200 flex items-center space-x-1.5 cursor-pointer text-xs"
-            >
-              {copiedEmail ? (
-                <>
-                  <Check size={13} className="text-green-500 animate-bounce" />
-                  <span className="text-green-500">Email Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy size={13} />
-                  <span>Get Enterprise Demo</span>
-                </>
-              )}
-            </button>
+            {/* Email copy button removed per request */}
           </motion.div>
+
+          {/* Interactive Controller Switch in Text block */}
+          <div className="mt-8 p-4 rounded-xl bg-gray-900/30 border border-gray-900 backdrop-blur-sm max-w-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-xs font-mono text-gray-400 font-bold uppercase tracking-wider">Disaster Simulation Deck</p>
+              <p className="text-[11px] text-gray-500 mt-1">Simulate a real-time cluster incident to demonstrate how my automated self-healing playbooks remediate memory leaks and pod crashes.</p>
+            </div>
+            <button
+              onClick={() => setIsChaosMode(!isChaosMode)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out outline-none mt-3 sm:mt-0 ${
+                isChaosMode ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]" : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              aria-label="Toggle Disaster Simulation"
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-gray-950 shadow ring-0 transition duration-300 ease-in-out flex items-center justify-center ${
+                  isChaosMode ? "translate-x-5" : "translate-x-0"
+                }`}
+              >
+                {isChaosMode ? "🔥" : "🟢"}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Right Side: Ultra-polished high-fidelity SaaS console with active charts & nodes */}
