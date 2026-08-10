@@ -45,7 +45,7 @@ export default function Experience() {
   ];
 
   return (
-    <section id="experience" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
+    <section id="experience" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative z-0 scroll-mt-20">
       {/* Visual background lights */}
       <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
 

@@ -22,6 +22,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const [panelTop, setPanelTop] = useState(0);
   const navRef = useRef<HTMLElement>(null);
   const isOpenRef = useRef(false);
+  // When true, unpinBody is deferred to onExitComplete (closeDrawer path).
+  // When false, handleNavClick already called unpinBody directly.
+  const deferredUnpinRef = useRef(false);
 
   // Phone reveal — matches the Contact page behaviour
   const [showPhone, setShowPhone] = useState(false);
@@ -46,6 +49,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   }, []);
 
   const openDrawer = () => {
+    // Cancel any deferred unpin from a previous close animation that hasn't
+    // finished yet (e.g. user reopens before the 150ms exit completes).
+    deferredUnpinRef.current = false;
     pinBody();
     setIsClosing(false);
     isOpenRef.current = true;
@@ -56,11 +62,14 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     // Guard against double-close — if already closing or closed, ignore.
     if (!isOpenRef.current) return;
     isOpenRef.current = false;
+    deferredUnpinRef.current = true;
     setIsClosing(true);
     setIsOpen(false);
     setShowPhone(false);
     setCopiedPhone(false);
-    unpinBody();
+    // unpinBody deferred to onExitComplete — keeps scroll locked + backdrop
+    // mounted in sync with the panel's exit animation so no page content
+    // bleeds through during the fade-out.
   };
 
   useEffect(() => {
@@ -158,6 +167,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       const prevY = getSavedScrollY();
       const targetY = Math.max(0, elementTop + prevY - headerBottom);
 
+      // handleNavClick calls unpinBody directly — don't also unpin in
+      // onExitComplete when the exit animation finishes.
+      deferredUnpinRef.current = false;
       isOpenRef.current = false;
       setIsClosing(true);
       setIsOpen(false);
@@ -187,7 +199,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       <nav
         ref={navRef}
         id="navbar"
-        className={`fixed left-0 w-full z-50 transition-all duration-300 ${
+        className={`fixed left-0 w-full transition-all duration-300 ${
+          isOpen ? "z-40" : "z-50"
+        } ${
           isChaosMode ? "top-[96px] sm:top-[56px]" : "top-0"
         } ${
           scrolled
@@ -293,20 +307,36 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       {/* Mobile Menu — rendered outside <nav> so the nav's backdrop-blur-md
            (present when scrolled) doesn't create a containing block that
            breaks position:fixed on iOS Safari. */}
-      {/* Backdrop — unmounts instantly when isClosing flips so the hamburger
-           button is never blocked during the panel's exit animation. */}
-      {isOpen && !isClosing && (
-        <div
-          className="fixed inset-0 z-40 md:hidden"
-          style={{ backgroundColor: '#030303' }}
-          onClick={closeDrawer}
-          aria-hidden="true"
-        />
-      )}
-
-      <AnimatePresence onExitComplete={() => setIsClosing(false)}>
+      <AnimatePresence
+        onExitComplete={() => {
+          setIsClosing(false);
+          // closeDrawer defers unpinBody — the backdrop + panel fade out
+          // together, scroll stays locked, no page bleed-through.
+          // handleNavClick already called unpinBody directly, so skip.
+          if (deferredUnpinRef.current) {
+            deferredUnpinRef.current = false;
+            unpinBody();
+          }
+        }}
+      >
         {isOpen && (
-          <motion.div
+          <>
+            {/* Full-viewport backdrop — fades out in sync with the panel so
+                page content never shows through during the exit animation. */}
+            <motion.div
+              key="nav-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-[100] md:hidden"
+              style={{ backgroundColor: '#030303' }}
+              onClick={closeDrawer}
+              aria-hidden="true"
+            />
+
+            {/* Content panel */}
+            <motion.div
               key="nav-panel"
               id="mobile-nav-panel"
               role="dialog"
@@ -316,7 +346,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className={`fixed left-0 right-0 z-50 md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3 ${isClosing ? 'pointer-events-none' : ''}`}
+              className={`fixed left-0 right-0 z-[110] md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3 ${isClosing ? 'pointer-events-none' : ''}`}
               data-scroll-lock-scrollable
               style={{
                 backgroundColor: '#060606',
@@ -324,7 +354,19 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                 maxHeight: panelTop ? `calc(100dvh - ${panelTop}px)` : undefined,
               }}
             >
-              <div className="space-y-1 pt-4">
+              {/* Close button inside panel — needed because the nav's hamburger
+                  sits at z-40 (below the z-[100] backdrop) when the drawer is open. */}
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={closeDrawer}
+                  className="p-2 text-gray-400 hover:text-white"
+                  aria-label="Close menu"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-1">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
@@ -404,6 +446,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                 </button>
               </div>
             </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

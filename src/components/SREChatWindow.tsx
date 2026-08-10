@@ -67,6 +67,7 @@ export default function SREChatWindow() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isFirstRender = useRef(true);
   const isOpenRef = useRef(false);
+  const deferredUnpinRef = useRef(false);
 
   // Scrolls only the message pane's own scrollbar, never the page.
   const scrollToBottom = () => {
@@ -238,6 +239,8 @@ export default function SREChatWindow() {
   };
 
   const openChat = () => {
+    // Cancel any deferred unpin from a previous close animation.
+    deferredUnpinRef.current = false;
     pinBody(); // synchronous — reflow happens before paint
     setIsClosing(false);
     isOpenRef.current = true;
@@ -249,9 +252,11 @@ export default function SREChatWindow() {
     // closed, ignore subsequent calls so we don't double-unpin.
     if (!isOpenRef.current) return;
     isOpenRef.current = false;
+    deferredUnpinRef.current = true;
     setIsClosing(true);
     setIsOpen(false);
-    unpinBody();
+    // unpinBody deferred to onExitComplete — keeps scroll locked + backdrop
+    // in sync with the panel's exit animation.
   };
 
   const handleReset = () => {
@@ -300,20 +305,32 @@ export default function SREChatWindow() {
            The backdrop prevents page content from bleeding through behind
            the panel, and clicking it closes the chat. dvh units account for
            mobile browser chrome (address bar show/hide) correctly. */}
-      {/* Backdrop — unmounts instantly when isClosing flips so the toggle
-           button is never blocked during the panel's exit animation. */}
-      {isOpen && !isClosing && (
-        <div
-          className="fixed inset-0 z-[60]"
-          style={{ backgroundColor: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)' }}
-          onClick={closeChat}
-          aria-hidden="true"
-        />
-      )}
-
-      <AnimatePresence onExitComplete={() => setIsClosing(false)}>
+      <AnimatePresence
+        onExitComplete={() => {
+          setIsClosing(false);
+          if (deferredUnpinRef.current) {
+            deferredUnpinRef.current = false;
+            unpinBody();
+          }
+        }}
+      >
         {isOpen && (
-          <motion.div
+          <>
+            {/* Backdrop — fades out in sync with the panel so page content
+                never shows through during the exit animation. */}
+            <motion.div
+              key="chat-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="fixed inset-0 z-90 bg-black/95"
+              onClick={closeChat}
+              aria-hidden="true"
+            />
+
+            {/* Panel */}
+            <motion.div
               key="chat-panel"
               id="sre-chat-panel"
               role="dialog"
@@ -323,7 +340,7 @@ export default function SREChatWindow() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className={`fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-[440px] h-[100dvh] sm:h-[90dvh] max-h-none sm:max-h-[600px] bg-gray-950 border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[70] ${isClosing ? 'pointer-events-none' : ''}`}
+              className={`fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-[440px] h-[100dvh] sm:h-[90dvh] max-h-none sm:max-h-[600px] bg-gray-950 border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[95] ${isClosing ? 'pointer-events-none' : ''}`}
             >
             {/* Header / Control Bar */}
             <div className="p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between">
@@ -497,6 +514,7 @@ export default function SREChatWindow() {
               </button>
             </form>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

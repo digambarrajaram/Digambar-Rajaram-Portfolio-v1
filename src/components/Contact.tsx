@@ -122,7 +122,7 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative overflow-hidden">
+    <section id="contact" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
       <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-accent/5 rounded-full blur-[110px] pointer-events-none animate-pulse" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

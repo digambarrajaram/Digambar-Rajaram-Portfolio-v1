@@ -58,7 +58,7 @@ export default function SkillsMatrix() {
   const hasSkillsFound = Object.keys(filteredSkillsMap).length > 0;
 
   return (
-    <section id="skills" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative overflow-hidden">
+    <section id="skills" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
       {/* Ambient glowing radial blur */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[140px] pointer-events-none" />
 
@@ -109,7 +109,7 @@ export default function SkillsMatrix() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-wrap gap-1.5 mb-10 pb-2 border-b border-gray-900/40 overflow-x-auto"
+          className="flex gap-1.5 mb-10 pb-2 border-b border-gray-900/40 overflow-x-auto whitespace-nowrap md:flex-wrap py-2 px-1 hide-scrollbar"
         >
           {categories.map((cat) => (
             <button
