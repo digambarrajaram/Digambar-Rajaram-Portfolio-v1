@@ -13,7 +13,11 @@
       "Bash(node *)",
       "Bash(npm audit *)",
       "Bash(echo \"exit: $?\")",
-      "Bash(awk '{print NR\": \"$0}' src/App.tsx)"
+      "Bash(awk '{print NR\": \"$0}' src/App.tsx)",
+      "Bash(curl -s \"https://digambarrajaram.cloud/\")",
+      "Bash(curl -sI \"https://digambarrajaram.cloud/assets/index-DLqSN50O.js\")",
+      "Bash(curl -sI \"https://digambarrajaram.cloud/assets/index-B9Z_DzL0.css\")",
+      "Bash(curl -sI \"https://digambarrajaram.cloud/api/health\")"
     ]
   }
 }

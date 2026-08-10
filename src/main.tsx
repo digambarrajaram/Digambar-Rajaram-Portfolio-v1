@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -10,13 +10,16 @@ const isDev = typeof process !== 'undefined'
 
 const devErrorFilter = (message: string) => {
   const normalized = message?.toLowerCase();
-  return /websocket/.test(normalized) && /\b(?:vite|hmr|hot module replacement)\b/.test(normalized) && /\b(?:fail|failed|close|closed|disconnect|disconnected)\b/.test(normalized);
+  return /\bwebsocket\b/.test(normalized) && /\b(?:vite|hmr|hot module replacement)\b/.test(normalized) && /\b(?:fail|failed|close|closed|disconnect|disconnected)\b/.test(normalized);
 };
 
-if (isBrowser && isDev) {
-  const runtime = window as Window & { __sre_dev_error_filter_installed__?: boolean };
-  if (!runtime.__sre_dev_error_filter_installed__) {
-    runtime.__sre_dev_error_filter_installed__ = true;
+// Dev-only HMR error filter — suppresses spurious Vite WebSocket
+// disconnection errors during hot reload.  Properly cleans up event
+// listeners on unmount (fixes a leak where the old module-scope code
+// added listeners without ever removing them).
+function DevErrorFilter() {
+  useEffect(() => {
+    if (!isBrowser || !isDev) return;
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const reason = event.reason;
@@ -32,7 +35,6 @@ if (isBrowser && isDev) {
 
     const handleWindowError = (event: ErrorEvent) => {
       const message = event.message || '';
-
       if (devErrorFilter(message)) {
         event.preventDefault();
         console.warn('🛡️ SRE Alert Filtered: Dev server HMR/WebSocket error suppressed.', message);
@@ -41,17 +43,24 @@ if (isBrowser && isDev) {
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     window.addEventListener('error', handleWindowError);
-  }
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleWindowError);
+    };
+  }, []);
+
+  return null;
 }
 
 const rootElement = isBrowser ? document.getElementById('root') : null;
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
+      <DevErrorFilter />
       <App />
     </StrictMode>,
   );
 } else if (isBrowser) {
   console.error('React root element not found: #root');
 }
-

@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import ProjectGallery from "./components/ProjectGallery";
 import Experience from "./components/Experience";
 import SkillsMatrix from "./components/SkillsMatrix";
-import ConsoleDemo from "./components/ConsoleDemo";
 import Contact from "./components/Contact";
-import SREChatWindow from "./components/SREChatWindow";
 import { CheckCircle2, ShieldAlert, X } from "lucide-react";
+
+// Lazy-loaded: below-the-fold or triggered-only components.
+// SREChatWindow pulls in react-markdown (~40 kB gzip); ConsoleDemo is a
+// terminal emulator far below the fold.  Neither blocks LCP.
+const ConsoleDemo = lazy(() => import("./components/ConsoleDemo"));
+const SREChatWindow = lazy(() => import("./components/SREChatWindow"));
 import { personalInfo } from "./data";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -226,7 +230,7 @@ export default function App() {
         <ProjectGallery />
         <Experience />
         <SkillsMatrix />
-        <ConsoleDemo />
+        <Suspense fallback={null}><ConsoleDemo /></Suspense>
         <Contact />
       </main>
 
@@ -318,7 +322,7 @@ export default function App() {
       </footer>
     </div>
 
-    <SREChatWindow />
+    <Suspense fallback={null}><SREChatWindow /></Suspense>
     </>
   );
 }
