@@ -61,14 +61,15 @@ Flagship projects:
 - Infrastructure Asset Platform: Spring Boot + MySQL + ReactJS internal asset tracking tool.
 - MenuMind AI: LangChain + Groq restaurant branding and menu generator.
 
-Certifications: Advanced Cloud Computing & DevOps (Learnbay x Microsoft), AI Engineer MLOps Track
-(Udemy), VMware vSphere ESXi & vCenter Administration (Udemy), Java Full Stack Development.
+Certifications: Advanced Cloud Computing & DevOps (Learnbay x Microsoft), AI Engineer MLOps Track –
+Deploy GenAI & Agentic AI at Scale (Udemy), VMware vSphere ESXi & vCenter Administration (Udemy),
+Java Full Stack Development (TalentSprint / Q-J Spiders).
 
 Education: Bachelor of Engineering, Computer Science & Engineering, VSM's S.R. Kothiwale Institute
 of Technology.
 
 Location / availability: India, open to Bengaluru, Mumbai, Hyderabad, Delhi NCR, or remote.
-Contact: digambarrajaram2@gmail.com, Phone: +91-7353570952, GitHub: github.com/digambarrajaram, portfolio: digambarrajaram.cloud
+Contact: digambarrajaram2@gmail.com, Phone: +91-7353570952, LinkedIn: linkedin.com/in/digambarrajaram, GitHub: github.com/digambarrajaram, Twitter: twitter.com/digambarrajaram, portfolio: digambarrajaram.cloud
 `.trim();
 
 // ---------------------------------------------------------------------------

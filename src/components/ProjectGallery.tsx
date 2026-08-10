@@ -66,7 +66,7 @@ export default function ProjectGallery() {
   }, [selectedCategory, categories]);
 
   return (
-    <section id="projects" className="py-16 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
+    <section id="projects" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
       <div className="absolute top-1/2 left-10 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

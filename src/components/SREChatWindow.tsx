@@ -248,7 +248,7 @@ export default function SREChatWindow() {
     isOpenRef.current = false;
     setIsClosing(true);
     setIsOpen(false);
-    unpinBody(null);
+    unpinBody();
   };
 
   const handleReset = () => {
@@ -297,26 +297,20 @@ export default function SREChatWindow() {
            The backdrop prevents page content from bleeding through behind
            the panel, and clicking it closes the chat. dvh units account for
            mobile browser chrome (address bar show/hide) correctly. */}
+      {/* Backdrop — unmounts instantly when isClosing flips so the toggle
+           button is never blocked during the panel's exit animation. */}
+      {isOpen && !isClosing && (
+        <div
+          className="fixed inset-0 z-[60]"
+          style={{ backgroundColor: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)' }}
+          onClick={closeChat}
+          aria-hidden="true"
+        />
+      )}
+
       <AnimatePresence onExitComplete={() => setIsClosing(false)}>
         {isOpen && (
-          <>
-            {/* Backdrop: lighter overlay so background remains visible but de-emphasized.
-                pointer-events-none is applied synchronously when isClosing flips so
-                a fast second tap during the exit animation doesn't land on the
-                still-mounted backdrop instead of the button underneath. */}
-            <motion.div
-              key="chat-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-              className={`fixed inset-0 z-[60] ${isClosing ? 'pointer-events-none' : ''}`}
-              style={{ backgroundColor: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)' }}
-              onClick={closeChat}
-              aria-hidden="true"
-            />
-            {/* Panel */}
-            <motion.div
+          <motion.div
               key="chat-panel"
               id="sre-chat-panel"
               role="dialog"
@@ -500,7 +494,6 @@ export default function SREChatWindow() {
               </button>
             </form>
           </motion.div>
-          </>
         )}
       </AnimatePresence>
     </>

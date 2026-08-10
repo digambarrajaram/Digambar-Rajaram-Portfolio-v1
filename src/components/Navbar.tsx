@@ -58,7 +58,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     setIsOpen(false);
     setShowPhone(false);
     setCopiedPhone(false);
-    unpinBody(null);
+    unpinBody();
   };
 
   useEffect(() => {
@@ -144,15 +144,9 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
     if (isOpen) {
       const prevY = getSavedScrollY();
-      // Use getBoundingClientRect + savedScrollY instead of offsetTop.
-      // offsetTop is relative to offsetParent, which can shift if any
-      // ancestor has position/transform set (e.g. a framer-motion wrapper).
-      // getBoundingClientRect is always viewport-relative, and prevY gives
-      // us the true document-scroll offset captured before the body was pinned.
-      const targetY = Math.max(
-        0,
-        element.getBoundingClientRect().top + prevY - navHeight - bannerOffset
-      );
+      const elementTop = element.getBoundingClientRect().top;
+      const headerBottom = navHeight + bannerOffset;
+      const targetY = Math.max(0, elementTop + prevY - headerBottom);
 
       isOpenRef.current = false;
       setIsClosing(true);
@@ -160,16 +154,17 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       setShowPhone(false);
       setCopiedPhone(false);
 
-      if (Math.abs(targetY - prevY) < 10) {
-        // Already at this section — unpin without scrolling.
-        unpinBody(null);
+      // If the element's top is already at or above the navbar line in the
+      // pinned viewport, the user is already looking at this section. Restore
+      // to savedScrollY — the instant scroll fires in rAF before paint, so
+      // there's no visible jump.
+      if (elementTop <= headerBottom + 40) {
+        unpinBody();
       } else {
-        // Different section — unpin without auto-scroll, then fire one
-        // smooth scroll so there's only a single scroll action.
-        unpinBody(null);
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: targetY, behavior: "smooth" });
-        });
+        // Different section — unpin with an instant scroll to the target.
+        // The scroll fires inside unpinBody's rAF before the next paint,
+        // so there's no intermediate frame showing the top of the page.
+        unpinBody(targetY);
       }
     } else {
       scrollToElement(id);
@@ -287,27 +282,20 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
       {/* Mobile Menu — rendered outside <nav> so the nav's backdrop-blur-md
            (present when scrolled) doesn't create a containing block that
            breaks position:fixed on iOS Safari. */}
+      {/* Backdrop — unmounts instantly when isClosing flips so the hamburger
+           button is never blocked during the panel's exit animation. */}
+      {isOpen && !isClosing && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ backgroundColor: '#030303' }}
+          onClick={closeDrawer}
+          aria-hidden="true"
+        />
+      )}
+
       <AnimatePresence onExitComplete={() => setIsClosing(false)}>
         {isOpen && (
-          <>
-            {/* Full-viewport backdrop — blocks scroll/poke-through, tap to close.
-                pointer-events-none is applied synchronously when isClosing flips
-                so a fast second tap during the 150ms exit animation doesn't land
-                on this still-mounted backdrop instead of the button underneath. */}
-            <motion.div
-              key="nav-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className={`fixed inset-0 z-40 md:hidden ${isClosing ? 'pointer-events-none' : ''}`}
-              style={{ backgroundColor: '#030303' }}
-              onClick={closeDrawer}
-              aria-hidden="true"
-            />
-
-            {/* Content panel — starts just below the navbar, height ≈ content */}
-            <motion.div
+          <motion.div
               key="nav-panel"
               id="mobile-nav-panel"
               role="dialog"
@@ -405,7 +393,6 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                 </button>
               </div>
             </motion.div>
-          </>
         )}
       </AnimatePresence>
     </>

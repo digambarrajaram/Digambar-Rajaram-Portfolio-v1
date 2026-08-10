@@ -297,7 +297,7 @@ export default function ConsoleDemo() {
   };
 
   return (
-    <section id="console" className="py-16 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
+    <section id="console" className="py-12 md:py-24 bg-gray-950 border-t border-gray-900/40 relative">
       <div className="absolute top-1/4 right-1/2 translate-x-1/3 w-[300px] h-[300px] bg-primary-violet/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
