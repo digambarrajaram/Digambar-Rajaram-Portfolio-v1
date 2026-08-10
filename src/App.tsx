@@ -58,9 +58,16 @@ export default function App() {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
-    if (window.scrollY !== 0) {
-      window.scrollTo(0, 0);
-    }
+    // Force scroll to top across multiple ticks — mobile Safari can
+    // restore scroll position asynchronously after React paints.
+    const toTop = () => window.scrollTo(0, 0);
+    toTop();
+    requestAnimationFrame(() => {
+      toTop();
+      // Re-check after fonts and images have had time to load
+      setTimeout(toTop, 100);
+      setTimeout(toTop, 500);
+    });
   }, []);
 
   useEffect(() => {
