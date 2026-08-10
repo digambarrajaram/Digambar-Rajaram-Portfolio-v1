@@ -137,7 +137,7 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative z-0 min-h-screen pt-24 sm:pt-32 pb-12 md:pb-16 flex flex-col justify-center items-center overflow-hidden terminal-grid bg-gray-950 px-4 sm:px-6 lg:px-8 scroll-mt-20"
+      className="relative z-0 min-h-screen pt-24 sm:pt-32 pb-8 md:pb-12 flex flex-col justify-center items-center overflow-hidden terminal-grid bg-gray-950 px-4 sm:px-6 lg:px-8 scroll-mt-20"
       style={{ paddingTop: `calc(var(--banner-offset, 0px) + 6rem)` }}
     >
       {/* Background ambient gradient light blobs */}
