@@ -11,6 +11,7 @@ import SREChatWindow from "./components/SREChatWindow";
 import { CheckCircle2, ShieldAlert, X } from "lucide-react";
 import { personalInfo } from "./data";
 import { motion, AnimatePresence } from "motion/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const healingMessages = [
   "📡 INCIDENT INTERCEPTED: INITIALIZING AUTOMATED RECOVERY PLAYBOOK...",
@@ -319,6 +320,7 @@ export default function App() {
     </div>
 
     <SREChatWindow />
+    <SpeedInsights />
     </>
   );
 }
