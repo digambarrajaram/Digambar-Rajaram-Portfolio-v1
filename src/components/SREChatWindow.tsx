@@ -258,7 +258,7 @@ export default function SREChatWindow() {
         throw new Error("Received empty response from the chat service.");
       }
 
-      const role = incoming.role === "system" ? "system" : "assistant";
+      const role: MessageRole = incoming.role === "system" ? "system" : "assistant";
       if (requestId !== requestIdRef.current || !isMountedRef.current) return;
 
       setMessages((prev) => {
@@ -276,13 +276,13 @@ export default function SREChatWindow() {
 
       setMessages((prev) => {
         const next = prev.map((entry) =>
-          entry.id === userMessage.id ? { ...entry, status: "failed" } : entry
+          entry.id === userMessage.id ? { ...entry, status: "failed" as const } : entry
         );
         return next;
       });
 
       setMessages((prev) => {
-        const next = [...prev, { role: "assistant", content: `⚠️ ${message}` }];
+        const next: Message[] = [...prev, { role: "assistant" as const, content: `⚠️ ${message}` }];
         messagesRef.current = next;
         return next;
       });
