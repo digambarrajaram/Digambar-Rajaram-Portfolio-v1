@@ -19,7 +19,7 @@ const SparkleStar = ({ className = "" }) => (
 
 export default function About() {
   return (
-    <section id="about" className="py-6 md:py-12 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
+    <section id="about" className="py-4 md:py-10 bg-gray-950 border-t border-gray-900/40 relative z-0 overflow-hidden scroll-mt-20">
       {/* Background ambient lighting */}
       <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 left-10 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[100px] pointer-events-none animate-pulse" />

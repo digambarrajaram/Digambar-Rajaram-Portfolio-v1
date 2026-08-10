@@ -51,6 +51,43 @@ export default function SREChatWindow() {
   const [currentStep, setCurrentStep] = useState("");
   const [retryText, setRetryText] = useState<string | null>(null);
 
+  // Draggable toggle button position — initialised to bottom-right, persisted
+  // across sessions via localStorage so the user's preference sticks.
+  const [btnPos, setBtnPos] = useState<{ x: number; y: number }>(() => {
+    if (typeof window === "undefined") return { x: 0, y: 0 };
+    try {
+      const saved = localStorage.getItem("sre-chat-btn-pos");
+      if (saved) return JSON.parse(saved) as { x: number; y: number };
+    } catch { /* ignore */ }
+    return { x: window.innerWidth - 72, y: window.innerHeight - 100 };
+  });
+  const draggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0, btnX: 0, btnY: 0 });
+
+  const onDragStart = (clientX: number, clientY: number) => {
+    draggingRef.current = false; // will become true after a small move
+    dragStartRef.current = { x: clientX, y: clientY, btnX: btnPos.x, btnY: btnPos.y };
+  };
+
+  const onDragMove = (clientX: number, clientY: number) => {
+    const dx = clientX - dragStartRef.current.x;
+    const dy = clientY - dragStartRef.current.y;
+    // Only start dragging after a 6px threshold to distinguish from tap
+    if (!draggingRef.current && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    draggingRef.current = true;
+    const size = 56 + 16; // button + padding
+    setBtnPos({
+      x: Math.max(0, Math.min(window.innerWidth - size, dragStartRef.current.btnX + dx)),
+      y: Math.max(0, Math.min(window.innerHeight - size, dragStartRef.current.btnY + dy)),
+    });
+  };
+
+  const onDragEnd = () => {
+    if (draggingRef.current) {
+      try { localStorage.setItem("sre-chat-btn-pos", JSON.stringify(btnPos)); } catch { /* ignore */ }
+    }
+  };
+
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
@@ -325,16 +362,38 @@ export default function SREChatWindow() {
     <>
       {!isOpen && (
         <div
-          className="fixed right-6 z-40"
-          style={{ bottom: isContactVisible ? "6.5rem" : "1.5rem", transition: "bottom 0.3s ease" }}
+          className="fixed z-[9999] select-none"
+          style={{
+            left: btnPos.x,
+            top: btnPos.y,
+            touchAction: "none",
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            onDragStart(e.clientX, e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (!e.isPrimary) return;
+            onDragMove(e.clientX, e.clientY);
+          }}
+          onPointerUp={(e) => {
+            onDragEnd();
+            if (!draggingRef.current) openChat();
+          }}
         >
           <motion.button
             ref={toggleBtnRef}
             id="chat-toggle-btn"
-            onClick={openChat}
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative p-4 rounded-full text-gray-950 font-bold shadow-[0_0_20px_rgba(255,212,0,0.3)] hover:shadow-[0_0_30px_rgba(255,212,0,0.5)] transition-all cursor-pointer flex items-center justify-center bg-accent text-gray-950"
+            className="rounded-full font-bold cursor-grab active:cursor-grabbing flex items-center justify-center pointer-events-none"
+            style={{
+              backgroundColor: "#FFD400",
+              color: "#050505",
+              boxShadow: "0 0 20px rgba(255,212,0,0.3)",
+              width: 56,
+              height: 56,
+            }}
             aria-label="Open SRE-Copilot chat"
             aria-expanded={isOpen}
             aria-controls="sre-chat-panel"

@@ -231,7 +231,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
         } ${
           scrolled
             ? "bg-gray-950/85 backdrop-blur-md border-b border-gray-900/60 py-3"
-            : "bg-transparent py-5"
+            : "bg-transparent py-3 sm:py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -380,12 +380,31 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
                 maxHeight: panelTop ? `calc(100dvh - ${panelTop}px)` : undefined,
               }}
             >
-              {/* Close button inside panel — needed because the nav's hamburger
-                  sits at z-40 (below the z-[100] backdrop) when the drawer is open. */}
-              <div className="flex justify-end pt-4">
+              {/* Drawer header — mirrors the main navbar branding so the top
+                  of the panel doesn't look blank on mobile. */}
+              <div className="flex items-center justify-between pt-4 pb-2 border-b border-gray-900/60">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display font-bold text-gray-950 transition-all duration-500 ${
+                    isChaosMode
+                      ? "bg-red-500 shadow-[0_0_20px_#EF4444] animate-pulse"
+                      : "bg-accent shadow-[0_0_15px_rgba(255,212,0,0.5)]"
+                  }`}>
+                    {isChaosMode ? "⚠️" : "DR"}
+                  </div>
+                  <div>
+                    <span className="font-display font-bold text-sm tracking-tight text-white block">
+                      {personalInfo.name}
+                    </span>
+                    <span className={`font-mono text-[9px] tracking-widest uppercase block font-semibold transition-colors duration-500 ${
+                      isChaosMode ? "text-red-400" : "text-accent"
+                    }`}>
+                      {isChaosMode ? "INCIDENT ACTIVE" : "SRE & AI Platform"}
+                    </span>
+                  </div>
+                </div>
                 <button
                   onClick={closeDrawer}
-                  className="p-2 text-gray-400 hover:text-white"
+                  className="p-2 text-gray-400 hover:text-white shrink-0"
                   aria-label="Close menu"
                 >
                   <X size={20} />

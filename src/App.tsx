@@ -174,6 +174,7 @@ export default function App() {
   }, [isChaosMode]);
 
   return (
+    <>
     <div className={`relative min-h-screen bg-gray-950 font-sans text-gray-100 selection:bg-accent selection:text-gray-950 transition-colors duration-700 ${isChaosMode ? "shadow-[inset_0_0_100px_rgba(239,68,68,0.15)] border-red-500/10" : ""}`}>
       <AnimatePresence>
         {isChaosMode && (
@@ -278,7 +279,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <footer className="bg-gray-950 border-t border-gray-900/80 pt-12 pb-24 px-4 sm:px-6 lg:px-8 relative z-10 overflow-hidden">
+      <footer className="bg-gray-950 border-t border-gray-900/80 pt-8 pb-12 sm:pt-12 sm:pb-24 px-4 sm:px-6 lg:px-8 relative z-10 overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[100px] bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -308,8 +309,9 @@ export default function App() {
           </div>
         </div>
       </footer>
-
-      <SREChatWindow />
     </div>
+
+    <SREChatWindow />
+    </>
   );
 }
