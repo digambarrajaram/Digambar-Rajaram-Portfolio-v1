@@ -15,12 +15,14 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const openStateRef = useRef(false);
   // Distance from the top of the viewport to the bottom of the fixed navbar.
   // Used to position the mobile dropdown panel exactly below the header,
   // including any additional offset from the chaos-mode banner (fixes a bug
   // where the panel rendered too high / overlapped the banner in chaos mode).
   const [panelTop, setPanelTop] = useState(0);
   const navRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(false);
   // When true, unpinBody is deferred to onExitComplete (closeDrawer path).
   // When false, handleNavClick already called unpinBody directly.
@@ -44,44 +46,48 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   // Guard against double-unlock on unmount.
   useEffect(() => {
     return () => {
-      if (isOpenRef.current) unpinBody();
+      if (isOpenRef.current) {
+        isOpenRef.current = false;
+        unpinBody();
+      }
     };
   }, []);
 
-  const openDrawer = () => {
-    // Cancel any deferred unpin from a previous close animation that hasn't
-    // finished yet (e.g. user reopens before the 150ms exit completes).
+  const openDrawer = React.useCallback(() => {
+    if (isOpenRef.current) return;
     deferredUnpinRef.current = false;
     pinBody();
     setIsClosing(false);
     isOpenRef.current = true;
+    openStateRef.current = true;
     setIsOpen(true);
-  };
+  }, []);
 
-  const closeDrawer = () => {
-    // Guard against double-close — if already closing or closed, ignore.
+  const closeDrawer = React.useCallback(() => {
     if (!isOpenRef.current) return;
     isOpenRef.current = false;
+    openStateRef.current = false;
     deferredUnpinRef.current = true;
     setIsClosing(true);
     setIsOpen(false);
     setShowPhone(false);
     setCopiedPhone(false);
-    // unpinBody deferred to onExitComplete — keeps scroll locked + backdrop
-    // mounted in sync with the panel's exit animation so no page content
-    // bleeds through during the fade-out.
-  };
+  }, []);
+
+  const updatePanelTop = React.useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    setPanelTop(nav.getBoundingClientRect().bottom);
+  }, []);
 
   useEffect(() => {
-    const updatePanelTop = () => {
-      if (navRef.current) {
-        setPanelTop(navRef.current.getBoundingClientRect().bottom);
-      }
-    };
     updatePanelTop();
+  }, [updatePanelTop, isChaosMode, scrolled]);
+
+  useEffect(() => {
     window.addEventListener("resize", updatePanelTop);
     return () => window.removeEventListener("resize", updatePanelTop);
-  }, [isOpen, scrolled, isChaosMode]);
+  }, [updatePanelTop]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,35 +100,35 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
   // Close the mobile menu on Escape for keyboard users.
   useEffect(() => {
     if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeDrawer();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isOpen]);
+  }, [isOpen, closeDrawer]);
 
   // Focus trap — keep Tab / Shift+Tab cycling within the nav drawer while open.
   useEffect(() => {
     if (!isOpen) return;
-    const panel = document.getElementById("mobile-nav-panel");
+    const panel = panelRef.current;
     if (!panel) return;
 
     const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-    const trapFocus = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
       const focusable = Array.from(panel.querySelectorAll(FOCUSABLE)) as HTMLElement[];
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (e.shiftKey) {
+      if (event.shiftKey) {
         if (document.activeElement === first) {
-          e.preventDefault();
+          event.preventDefault();
           last.focus();
         }
       } else {
         if (document.activeElement === last) {
-          e.preventDefault();
+          event.preventDefault();
           first.focus();
         }
       }
@@ -130,6 +136,22 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
     document.addEventListener("keydown", trapFocus);
     return () => document.removeEventListener("keydown", trapFocus);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+
+    if (focusable.length > 0) {
+      focusable[0].focus();
+    }
   }, [isOpen]);
 
   const navItems = [
@@ -142,57 +164,60 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
     { id: "contact", label: "Contact" },
   ];
 
-  const handleNavClick = (id: string) => {
-    const element = document.getElementById(id);
-    if (!element) return;
+  const handleNavClick = React.useCallback(
+    (id: string) => {
+      const element = document.getElementById(id);
+      if (!element) return;
 
-    const navHeight = navRef.current?.offsetHeight || 0;
-    const bannerOffset = parseInt(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--banner-offset") || "0",
-      10
-    );
-    const headerBottom = navHeight + bannerOffset;
+      const navHeight = navRef.current?.offsetHeight || 0;
+      const bannerOffset = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--banner-offset") || "0",
+        10
+      );
+      const headerBottom = navHeight + bannerOffset;
 
-    // elementTop is the element's distance from the viewport top.  When the
-    // body is pinned we use getSavedScrollY() (window.scrollY is always 0);
-    // when unpinned we use the live window.scrollY directly.
-    const elementTop = element.getBoundingClientRect().top;
-    // The section is "already visible" only when its top edge is between
-    // just-above-the-viewport and the navbar line — not scrolled past above
-    // (negative elementTop with large magnitude) and not below the fold.
-    const alreadyThere = elementTop >= -40 && elementTop <= headerBottom + 40;
+      // elementTop is the element's distance from the viewport top.  When the
+      // body is pinned we use getSavedScrollY() (window.scrollY is always 0);
+      // when unpinned we use the live window.scrollY directly.
+      const elementTop = element.getBoundingClientRect().top;
+      // The section is "already visible" only when its top edge is between
+      // just-above-the-viewport and the navbar line — not scrolled past above
+      // (negative elementTop with large magnitude) and not below the fold.
+      const alreadyThere = elementTop >= -40 && elementTop <= headerBottom + 40;
 
-    if (isOpen) {
-      const prevY = getSavedScrollY();
-      const targetY = Math.max(0, elementTop + prevY - headerBottom);
+      if (openStateRef.current) {
+        const prevY = getSavedScrollY();
+        const targetY = Math.max(0, elementTop + prevY - headerBottom);
 
-      // handleNavClick calls unpinBody directly — don't also unpin in
-      // onExitComplete when the exit animation finishes.
-      deferredUnpinRef.current = false;
-      isOpenRef.current = false;
-      setIsClosing(true);
-      setIsOpen(false);
-      setShowPhone(false);
-      setCopiedPhone(false);
+        // handleNavClick calls unpinBody directly — don't also unpin in
+        // onExitComplete when the exit animation finishes.
+        deferredUnpinRef.current = false;
+        isOpenRef.current = false;
+        setIsClosing(true);
+        setIsOpen(false);
+        setShowPhone(false);
+        setCopiedPhone(false);
 
-      if (alreadyThere) {
-        // Already looking at this section — restore to savedScrollY.
-        // The instant scroll fires in rAF before paint, so no visible jump.
-        unpinBody();
+        if (alreadyThere) {
+          // Already looking at this section — restore to savedScrollY.
+          // The instant scroll fires in rAF before paint, so no visible jump.
+          unpinBody();
+        } else {
+          // Different section — unpin with an instant scroll to the target.
+          // The scroll fires inside unpinBody's rAF before the next paint,
+          // so there's no intermediate frame showing the top of the page.
+          unpinBody(targetY);
+        }
       } else {
-        // Different section — unpin with an instant scroll to the target.
-        // The scroll fires inside unpinBody's rAF before the next paint,
-        // so there's no intermediate frame showing the top of the page.
-        unpinBody(targetY);
+        // Desktop — only scroll if we aren't already at this section.
+        if (!alreadyThere) {
+          scrollToElement(id);
+        }
       }
-    } else {
-      // Desktop — only scroll if we aren't already at this section.
-      if (!alreadyThere) {
-        scrollToElement(id);
-      }
-    }
-  };
+    },
+    [isOpen, scrollToElement]
+  );
 
   return (
     <>
@@ -339,6 +364,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
             <motion.div
               key="nav-panel"
               id="mobile-nav-panel"
+              ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-label="Mobile navigation"

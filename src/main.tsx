@@ -1,38 +1,57 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Gracefully intercept and suppress benign development-only WebSocket / HMR disconnection warnings
-if (typeof window !== "undefined") {
-  window.addEventListener("unhandledrejection", (event) => {
-    const reason = event.reason?.message || String(event.reason || "");
-    if (
-      reason.includes("WebSocket") ||
-      reason.includes("vite") ||
-      reason.includes("hmr")
-    ) {
-      event.preventDefault();
-      console.warn("🛡️ SRE Alert Filtered: Dev Server HMR WebSocket rejection suppressed gracefully.", reason);
-    }
-  });
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+const isDev = typeof process !== 'undefined'
+  ? process.env.NODE_ENV === 'development'
+  : import.meta?.env?.MODE === 'development';
 
-  window.addEventListener("error", (event) => {
-    const message = event.message || "";
-    if (
-      message.includes("WebSocket") ||
-      message.includes("vite") ||
-      message.includes("hmr")
-    ) {
-      event.preventDefault();
-      console.warn("🛡️ SRE Alert Filtered: Dev Server HMR WebSocket error suppressed gracefully.", message);
-    }
-  });
+const devErrorFilter = (message: string) => {
+  const normalized = message?.toLowerCase();
+  return /websocket/.test(normalized) && /\b(?:vite|hmr|hot module replacement)\b/.test(normalized) && /\b(?:fail|failed|close|closed|disconnect|disconnected)\b/.test(normalized);
+};
+
+if (isBrowser && isDev) {
+  const runtime = window as Window & { __sre_dev_error_filter_installed__?: boolean };
+  if (!runtime.__sre_dev_error_filter_installed__) {
+    runtime.__sre_dev_error_filter_installed__ = true;
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const message = typeof reason === 'string'
+        ? reason
+        : reason?.message ?? String(reason ?? '');
+
+      if (devErrorFilter(message)) {
+        event.preventDefault();
+        console.warn('🛡️ SRE Alert Filtered: Dev server HMR/WebSocket rejection suppressed.', message);
+      }
+    };
+
+    const handleWindowError = (event: ErrorEvent) => {
+      const message = event.message || '';
+
+      if (devErrorFilter(message)) {
+        event.preventDefault();
+        console.warn('🛡️ SRE Alert Filtered: Dev server HMR/WebSocket error suppressed.', message);
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleWindowError);
+  }
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+const rootElement = isBrowser ? document.getElementById('root') : null;
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+} else if (isBrowser) {
+  console.error('React root element not found: #root');
+}
 
