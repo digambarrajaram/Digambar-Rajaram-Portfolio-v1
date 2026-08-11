@@ -17,7 +17,10 @@
       "Bash(curl -s \"https://digambarrajaram.cloud/\")",
       "Bash(curl -sI \"https://digambarrajaram.cloud/assets/index-DLqSN50O.js\")",
       "Bash(curl -sI \"https://digambarrajaram.cloud/assets/index-B9Z_DzL0.css\")",
-      "Bash(curl -sI \"https://digambarrajaram.cloud/api/health\")"
+      "Bash(curl -sI \"https://digambarrajaram.cloud/api/health\")",
+      "Bash(curl -sI \"https://digambarrajaram.cloud/fonts/plus-jakarta-sans-400.woff2\")",
+      "Bash(git commit -m 'fix: resolve font 404s, mobile nav memory leak, and vendor bundle splitting *)",
+      "Bash(git push *)"
     ]
   }
 }
