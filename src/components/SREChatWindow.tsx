@@ -418,6 +418,7 @@ export default function SREChatWindow() {
       )}
 
       <AnimatePresence
+        mode="wait"
         onExitComplete={() => {
           setIsClosing(false);
           if (deferredUnpinRef.current) {

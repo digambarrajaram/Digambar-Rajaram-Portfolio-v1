@@ -1,0 +1,8 @@
+# Prevent Git from corrupting binary font files via autocrlf line-ending
+# conversion.  Without this, woff2/woff/ttf/otf files committed on Windows
+# or checked out with core.autocrlf=true will get their bytes mangled,
+# producing "OTS parsing error: invalid sfntVersion" in browsers.
+*.woff2 binary
+*.woff  binary
+*.ttf   binary
+*.otf   binary

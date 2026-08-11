@@ -339,6 +339,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
            (present when scrolled) doesn't create a containing block that
            breaks position:fixed on iOS Safari. */}
       <AnimatePresence
+        mode="wait"
         onExitComplete={() => {
           setIsClosing(false);
           // closeDrawer defers unpinBody — the backdrop + panel fade out
