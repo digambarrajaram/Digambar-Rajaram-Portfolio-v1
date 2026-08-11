@@ -387,8 +387,11 @@ export default function App() {
       </footer>
     </div>
 
-  {isChatReady && (
-    <Suspense fallback={null}>
-      <SREChatWindow />
-    </Suspense>
-  )}
+    {isChatReady && (
+      <Suspense fallback={null}>
+        <SREChatWindow />
+      </Suspense>
+    )}
+  </>
+  );
+}
