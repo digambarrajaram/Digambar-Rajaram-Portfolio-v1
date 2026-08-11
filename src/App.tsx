@@ -67,12 +67,15 @@ export default function App() {
     // restore scroll position asynchronously after React paints.
     const toTop = () => window.scrollTo(0, 0);
     toTop();
-    requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       toTop();
       // Re-check after fonts and images have had time to load
-      setTimeout(toTop, 100);
-      setTimeout(toTop, 500);
+      timeoutId1 = window.setTimeout(toTop, 100);
+      timeoutId2 = window.setTimeout(toTop, 500);
     });
+
+    let timeoutId1: number | null = null;
+    let timeoutId2: number | null = null;
 
     const handleLoad = () => {
       toTop();
@@ -81,6 +84,9 @@ export default function App() {
 
     return () => {
       window.removeEventListener("load", handleLoad);
+      cancelAnimationFrame(rafId);
+      if (timeoutId1 !== null) window.clearTimeout(timeoutId1);
+      if (timeoutId2 !== null) window.clearTimeout(timeoutId2);
     };
   }, []);
   useEffect(() => {

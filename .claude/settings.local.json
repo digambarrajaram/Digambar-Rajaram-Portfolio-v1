@@ -20,7 +20,14 @@
       "Bash(curl -sI \"https://digambarrajaram.cloud/api/health\")",
       "Bash(curl -sI \"https://digambarrajaram.cloud/fonts/plus-jakarta-sans-400.woff2\")",
       "Bash(git commit -m 'fix: resolve font 404s, mobile nav memory leak, and vendor bundle splitting *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(curl -sI -H \"Accept-Encoding: br, gzip\" \"https://digambarrajaram.cloud/assets/index-DLqSN50O.js\")",
+      "Bash(dig digambarrajaram.cloud +short)",
+      "Bash(dig digambarrajaram.cloud CNAME +short)",
+      "Bash(curl -sI \"https://digambarrajaram.cloud/\")",
+      "Bash(nslookup digambarrajaram.cloud)",
+      "Bash(curl -sI -H \"Accept-Encoding: br, gzip\" \"https://digambarrajaram.cloud/assets/index-g4hffx53.js\")",
+      "Bash(curl -sI -H \"Accept-Encoding: br, gzip\" \"https://digambarrajaram.cloud/assets/index-B8R6NVww.css\")"
     ]
   }
 }
