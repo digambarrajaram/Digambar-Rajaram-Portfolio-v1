@@ -348,8 +348,12 @@ export default function SREChatWindow() {
   }, [retryText, isLoading, handleSend]);
 
   const openChat = useCallback(() => {
-    deferredUnpinRef.current = false;
-    pinBody();
+    if (isOpenRef.current) return;
+    if (deferredUnpinRef.current) {
+      deferredUnpinRef.current = false;
+    } else {
+      pinBody();
+    }
     setIsClosing(false);
     isOpenRef.current = true;
     setIsOpen(true);

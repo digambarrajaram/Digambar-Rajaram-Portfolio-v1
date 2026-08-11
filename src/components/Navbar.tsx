@@ -55,8 +55,14 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
 
   const openDrawer = React.useCallback(() => {
     if (isOpenRef.current) return;
-    deferredUnpinRef.current = false;
-    pinBody();
+    if (deferredUnpinRef.current) {
+      // A close is still mid-exit; its unpinBody() hasn't run yet, so the
+      // original pin is still active. Just cancel the pending unpin —
+      // don't pin a second time.
+      deferredUnpinRef.current = false;
+    } else {
+      pinBody();
+    }
     setIsClosing(false);
     isOpenRef.current = true;
     openStateRef.current = true;
@@ -200,6 +206,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
         // onExitComplete when the exit animation finishes.
         deferredUnpinRef.current = false;
         isOpenRef.current = false;
+        openStateRef.current = false;
         setIsClosing(true);
         setIsOpen(false);
         setShowPhone(false);
@@ -339,7 +346,6 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
            (present when scrolled) doesn't create a containing block that
            breaks position:fixed on iOS Safari. */}
       <AnimatePresence
-        mode="wait"
         onExitComplete={() => {
           setIsClosing(false);
           // closeDrawer defers unpinBody — the backdrop + panel fade out
