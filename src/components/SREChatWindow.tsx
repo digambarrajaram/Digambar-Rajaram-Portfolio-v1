@@ -63,19 +63,21 @@ export default function SREChatWindow() {
     return { x: window.innerWidth - 72, y: window.innerHeight - 100 };
   });
   const draggingRef = useRef(false);
+  const pointerDownRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, btnX: 0, btnY: 0 });
   const pendingRafRef = useRef<number | null>(null);
   const lastDragPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const onDragStart = (clientX: number, clientY: number) => {
-    draggingRef.current = false; // will become true after a small move
+    pointerDownRef.current = true;
+    draggingRef.current = false;
     dragStartRef.current = { x: clientX, y: clientY, btnX: btnPos.x, btnY: btnPos.y };
   };
 
   const onDragMove = (clientX: number, clientY: number) => {
+    if (!pointerDownRef.current) return;
     const dx = clientX - dragStartRef.current.x;
     const dy = clientY - dragStartRef.current.y;
-    // Only start dragging after a 6px threshold to distinguish from tap
     if (!draggingRef.current && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
     draggingRef.current = true;
     lastDragPosRef.current = { x: Math.max(0, Math.min(window.innerWidth - (56 + 16), dragStartRef.current.btnX + dx)),
@@ -89,6 +91,7 @@ export default function SREChatWindow() {
   };
 
   const onDragEnd = () => {
+    pointerDownRef.current = false;
     if (draggingRef.current) {
       try { localStorage.setItem("sre-chat-btn-pos", JSON.stringify(btnPos)); } catch { /* ignore */ }
     }
