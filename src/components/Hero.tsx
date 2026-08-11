@@ -3,8 +3,7 @@ import {
   Server, 
   Cpu, 
   HardDrive, 
-  Activity, 
-  Terminal, 
+  Terminal,
   ArrowRight, 
   Layers, 
   Play, 
@@ -107,23 +106,23 @@ export default function Hero({ isChaosMode, setIsChaosMode }: HeroProps) {
     {
       id: "stat-1",
       icon: <Server className={isChaosMode ? "text-red-400" : "text-accent"} size={20} />,
-      label: "Node Status",
+      label: "Managed nodes",
       value: isChaosMode ? "3 Degraded" : stats.vmsManaged,
       desc: isChaosMode ? "EKS replica failure" : "Production host nodes"
     },
     {
       id: "stat-2",
-      icon: <Cpu className={isChaosMode ? "text-red-400" : "text-accent"} size={20} />,
-      label: "Active CPU Load",
-      value: isChaosMode ? "96.4%" : "41.2%",
-      desc: isChaosMode ? "OOMKilled event logs" : "Cluster reservation optimal"
+      icon: <ShieldAlert className={isChaosMode ? "text-red-400" : "text-accent"} size={20} />,
+      label: "Patch compliance",
+      value: isChaosMode ? "3 failing" : "100%",
+      desc: isChaosMode ? "Nodes behind patch schedule" : "Monthly patch compliance across 1,500+ VMs"
     },
     {
       id: "stat-3",
-      icon: <Activity className={isChaosMode ? "text-red-400 animate-pulse" : "text-accent"} size={20} />,
-      label: "System SLA",
-      value: isChaosMode ? "94.12%" : stats.uptime,
-      desc: isChaosMode ? "Critical Incident Active" : "Guaranteed SLA baseline"
+      icon: <RefreshCw className={isChaosMode ? "text-red-400 animate-spin" : "text-accent"} size={20} />,
+      label: "DR failover",
+      value: isChaosMode ? "Degraded" : "60% faster",
+      desc: isChaosMode ? "DR runbook interrupted" : "VMware failover drill time cut"
     }
   ];
 
