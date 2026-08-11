@@ -36,6 +36,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false);
   const [healingLogs, setHealingLogs] = useState<string[]>([]);
   const [healingProgress, setHealingProgress] = useState(0);
+  const [isChatReady, setIsChatReady] = useState(false);
 
   const isMountedRef = useRef(true);
   const isHealingRef = useRef(false);
@@ -72,8 +73,72 @@ export default function App() {
       setTimeout(toTop, 100);
       setTimeout(toTop, 500);
     });
-  }, []);
 
+    const handleLoad = () => {
+      toTop();
+    };
+    window.addEventListener("load", handleLoad, { once: true });
+
+    return () => {
+      window.removeEventListener("load", handleLoad);
+    };
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+
+    let idleHandle: number | null = null;
+    let timeoutHandle: number | null = null;
+    let interactionAttached = false;
+
+    const markReady = () => {
+      if (idleHandle !== null) {
+        window.cancelIdleCallback?.(idleHandle);
+        idleHandle = null;
+      }
+      if (timeoutHandle !== null) {
+        window.clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+      setIsChatReady(true);
+    };
+
+    const scheduleChatReady = () => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleHandle = window.requestIdleCallback(markReady, { timeout: 2000 });
+      } else {
+        timeoutHandle = window.setTimeout(markReady, 2000);
+      }
+    };
+
+    const onFirstInteraction = () => {
+      markReady();
+    };
+
+    const attachInteractionListeners = () => {
+      if (interactionAttached) return;
+      interactionAttached = true;
+      window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+      window.addEventListener("click", onFirstInteraction, { once: true, passive: true });
+      window.addEventListener("keydown", onFirstInteraction, { once: true, passive: true });
+    };
+
+    scheduleChatReady();
+    attachInteractionListeners();
+
+    return () => {
+      if (idleHandle !== null) {
+        window.cancelIdleCallback?.(idleHandle);
+      }
+      if (timeoutHandle !== null) {
+        window.clearTimeout(timeoutHandle);
+      }
+      if (interactionAttached) {
+        window.removeEventListener("scroll", onFirstInteraction);
+        window.removeEventListener("click", onFirstInteraction);
+        window.removeEventListener("keydown", onFirstInteraction);
+      }
+    };
+  }, []);
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined" || typeof IntersectionObserver === "undefined") return;
 
@@ -322,7 +387,8 @@ export default function App() {
       </footer>
     </div>
 
-    <Suspense fallback={null}><SREChatWindow /></Suspense>
-    </>
-  );
-}
+  {isChatReady && (
+    <Suspense fallback={null}>
+      <SREChatWindow />
+    </Suspense>
+  )}

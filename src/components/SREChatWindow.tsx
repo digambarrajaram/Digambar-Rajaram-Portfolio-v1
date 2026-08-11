@@ -434,7 +434,7 @@ export default function SREChatWindow() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
+              transition={{ duration: 0.08 }}
               className="fixed inset-0 z-90 bg-black/95"
               onClick={closeChat}
               aria-hidden="true"
@@ -449,7 +449,7 @@ export default function SREChatWindow() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
               className={`fixed inset-0 sm:inset-auto sm:bottom-4 sm:right-4 w-full sm:w-[440px] h-[100dvh] sm:h-[90dvh] max-h-none sm:max-h-[600px] bg-gray-950 border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[95] ${isClosing ? "pointer-events-none" : ""}`}
             >
               <div className="p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between">

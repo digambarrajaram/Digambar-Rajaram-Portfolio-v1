@@ -360,7 +360,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.1 }}
               className="fixed inset-0 z-[100] md:hidden"
               style={{ backgroundColor: '#030303' }}
               onClick={closeDrawer}
@@ -378,7 +378,7 @@ export default function Navbar({ activeSection, isChaosMode }: NavbarProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.1 }}
               className={`fixed left-0 right-0 z-[110] md:hidden overflow-y-auto flex flex-col px-4 pb-6 space-y-3 ${isClosing ? 'pointer-events-none' : ''}`}
               data-scroll-lock-scrollable
               style={{

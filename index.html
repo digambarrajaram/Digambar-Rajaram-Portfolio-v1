@@ -26,6 +26,13 @@
       window.addEventListener('DOMContentLoaded', function () {
         window.scrollTo(0, 0);
       });
+      // When the page is restored from bfcache, DOMContentLoaded may not fire.
+      // Ensure the browser does not restore a previous scroll position.
+      window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+          window.scrollTo(0, 0);
+        }
+      });
     </script>
   </head>
   <body>
