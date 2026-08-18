@@ -3,7 +3,7 @@ import Groq from "groq-sdk";
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 const MAX_MESSAGES = 20; // max turns kept in a single request payload
 const MAX_MESSAGE_CHARS = 2000; // max length per individual message
 const MAX_OUTPUT_TOKENS = 700;
